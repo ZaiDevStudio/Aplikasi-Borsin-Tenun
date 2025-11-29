@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tentang Aplikasi</title>
+    <link rel="stylesheet" href="style.css?v=300">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Gaya Khusus Halaman Ini */
+        .about-logo {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%; /* Membuat Bulat */
+            border: 4px solid #D4AF37; /* Ring Emas */
+            object-fit: cover;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+            background: white;
+            padding: 2px;
+        }
+        .dev-name {
+            color: #800000;
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-top: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .app-version {
+            background: #ffebee;
+            color: #b71c1c;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            display: inline-block;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        .divider {
+            height: 2px;
+            background: linear-gradient(to right, transparent, #D4AF37, transparent);
+            margin: 20px 0;
+            opacity: 0.5;
+        }
+        .social-link {
+            display: inline-block;
+            width: 40px; height: 40px;
+            line-height: 40px;
+            background: #eee;
+            border-radius: 50%;
+            color: #333;
+            margin: 0 5px;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+        .social-link:hover {
+            background: #800000;
+            color: white;
+        }
+    </style>
+</head>
+<body id="page-tentang">
+    <div class="navbar">
+        <a href="dashboard.html" class="nav-btn"><i class="fas fa-arrow-left"></i></a>
+        <div class="brand-text">
+            <h2>Tentang</h2>
+            <p>Info Aplikasi</p>
+        </div>
+    </div>
+
+    <div class="container" style="text-align: center; margin-top: 10px;">
+        <div class="card">
+            <img src="borsin.png" alt="Logo Borsin" class="about-logo">
+            
+            <h2 style="margin-bottom: 5px;">Borsin Tenun App</h2>
+            <div class="app-version">Versi 1.0 (Stable)</div>
+            
+            <p style="color: #666; font-size: 0.9rem; line-height: 1.6;">
+                Aplikasi manajemen produksi dan penggajian karyawan tenun yang modern, transparan, dan efisien.
+            </p>
+
+            <div class="divider"></div>
+
+            <p style="font-size: 0.8rem; color: #888; margin-bottom: 5px;">Dikembangkan Oleh:</p>
+            <div class="dev-name">Yeriyuma Zai, AMd.Kom</div>
+            
+            <div style="margin-top: 20px;">
+                <a href="#" class="social-link"><i class="fab fa-whatsapp"></i></a>
+                <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+            </div>
+
+            <p style="margin-top: 30px; font-size: 0.75rem; color: #aaa;">
+                &copy; 2025 All Rights Reserved
+            </p>
+        </div>
+    </div>
+
+    <script type="module" src="main.js?v=31"></script>
+</body>
+</html>
