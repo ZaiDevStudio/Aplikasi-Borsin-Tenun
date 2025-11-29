@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Input Penjualan</title>
+    <link rel="stylesheet" href="style.css?v=99">
+</head>
+<body id="page-tambah-terjual">
+    <div class="navbar">
+        <a href="dashboard.html" class="nav-btn">⬅️</a>
+        <h2>Input Ulos Terjual</h2>
+        <div></div>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <div style="background:#fff3cd; padding:10px; border-radius:5px; margin-bottom:15px; font-size:0.85rem; color:#856404;">
+                ⚠️ <strong>Perhatian:</strong> Menyimpan data ini akan otomatis <strong>mengurangi stok</strong> di Galeri Ulos.
+            </div>
+
+            <form id="formInput">
+                <div class="form-group">
+                    <label>Pilih Ulos Terjual</label>
+                    <select id="nama_ulos" class="form-control" required>
+                        <option value="">-- Memuat data... --</option>
+                    </select>
+                    <img id="preview_foto" src="" style="display:none; width: 100%; max-width: 150px; margin-top: 10px; border-radius: 8px; border: 1px solid #ccc;">
+                    <p id="info_stok" style="margin-top:5px; font-size:0.9rem; color:#666;"></p>
+                </div>
+
+                <div class="form-group">
+                    <label>Jumlah Terjual (Lembar)</label>
+                    <input type="number" id="jumlah" required class="form-control" placeholder="Contoh: 2">
+                </div>
+
+                <div class="form-group">
+                    <label>Tanggal Penjualan</label>
+                    <input type="date" id="tanggal_jual" class="form-control">
+                </div>
+
+                <button class="btn btn-success" style="margin-top:15px;">Simpan & Kurangi Stok</button>
+            </form>
+        </div>
+    </div>
+    
+    <script type="module" src="main.js?v=25"></script>
+</body>
+</html>
