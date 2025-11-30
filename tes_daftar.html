@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tes Database</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #f0f0f0; }
+        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        input { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background: blue; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        #logArea { margin-top: 20px; padding: 10px; background: #333; color: #0f0; font-family: monospace; border-radius: 5px; min-height: 150px; font-size: 0.8rem; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h3>Tes Pendaftaran & Database</h3>
+        <p>Gunakan form ini untuk mengecek kenapa data user tidak masuk.</p>
+        
+        <input type="text" id="t_nama" placeholder="Nama User Tes">
+        <input type="email" id="t_email" placeholder="Email Baru (Wajib beda)">
+        <input type="password" id="t_pass" placeholder="Password (123456)">
+        <button id="btnTes">DAFTAR & CEK ERROR</button>
+        
+        <div id="logArea">Menunggu perintah...</div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+        // CONFIG FIREBASE (SAYA PASTIKAN BENAR SESUAI DATA BAPAK)
+        const firebaseConfig = {
+            apiKey: "AIzaSyAXM4yJgh9F7ajGQApB-Ux1itQ_3pkik_o",
+            authDomain: "borsin-tenun-app.firebaseapp.com",
+            projectId: "borsin-tenun-app",
+            storageBucket: "borsin-tenun-app.firebasestorage.app",
+            messagingSenderId: "718889934564",
+            appId: "1:718889934564:web:c28a073e261d6783d096f1"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const logArea = document.getElementById('logArea');
+
+        function log(msg) {
+            logArea.innerText += "\n> " + msg;
+            console.log(msg);
+        }
+
+        document.getElementById('btnTes').addEventListener('click', async () => {
+            const nama = document.getElementById('t_nama').value;
+            const email = document.getElementById('t_email').value;
+            const pass = document.getElementById('t_pass').value;
+
+            if(!email || !pass) return log("Error: Isi email dan password dulu!");
+
+            log("1. Memulai proses pendaftaran...");
+            
+            try {
+                // LANGKAH 1: BUAT AKUN AUTH
+                const userCred = await createUserWithEmailAndPassword(auth, email, pass);
+                const user = userCred.user;
+                log("2. BERHASIL: Akun Auth dibuat. UID: " + user.uid);
+                log("3. Mencoba menulis ke Database 'users'...");
+
+                // LANGKAH 2: TULIS KE DATABASE
+                await setDoc(doc(db, "users", user.uid), {
+                    nama: nama,
+                    email: email,
+                    role: 'user',
+                    createdAt: new Date(),
+                    tes: "Data ini dari halaman diagnosa"
+                });
+
+                log("4. SUKSES BESAR! Data berhasil ditulis ke Database.");
+                log("   Silakan cek Firestore sekarang. Harusnya sudah 4 user.");
+
+            } catch (error) {
+                log("!!! ERROR FATAL !!!");
+                log("Kode Error: " + error.code);
+                log("Pesan: " + error.message);
+                
+                if (error.code === 'permission-denied') {
+                    log("PENYEBAB: Database Terkunci (Rules).");
+                    log("SOLUSI: Buka Firebase Console > Firestore > Rules. Ganti 'false' jadi 'true'.");
+                } else if (error.code === 'auth/email-already-in-use') {
+                    log("PENYEBAB: Email ini sudah terdaftar.");
+                } else {
+                    log("PENYEBAB LAIN: Cek config atau koneksi internet.");
+                }
+            }
+        });
+    </script>
+</body>
+</html>

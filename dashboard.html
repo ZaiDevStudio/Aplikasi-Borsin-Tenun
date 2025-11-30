@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Borsin</title>
+    <link rel="stylesheet" href="style.css?v=99999"> 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body id="page-dashboard">
+    
+    <div class="navbar">
+        <img src="borsin.png" class="logo-circle">
+        <div class="brand-text">
+            <h2>Borsin Tenun</h2>
+            <p>Manajemen Produksi</p>
+        </div>
+        <i class="fas fa-sign-out-alt nav-btn" id="btnLogout" title="Keluar"></i>
+    </div>
+
+    <div class="container">
+        
+        <div class="admin-only">
+            <h4 class="section-title">Menu Admin</h4>
+            <div class="dashboard-grid">
+                <a href="tambah_terjual.html" class="menu-item">
+                    <div class="icon-box trx-icon"><i class="fas fa-shopping-cart"></i></div>
+                    <span>Input Jual</span>
+                </a>
+                <a href="tambah_bukti.html" class="menu-item">
+                    <div class="icon-box adm-icon"><i class="fas fa-file-invoice-dollar"></i></div>
+                    <span>Upload Bukti</span>
+                </a>
+                <a href="tambah_data_ulos.html" class="menu-item">
+                    <div class="icon-box adm-icon"><i class="fas fa-upload"></i></div>
+                    <span>Tambah Ulos</span>
+                </a>
+                <a href="tambah_karyawan.html" class="menu-item">
+                    <div class="icon-box adm-icon"><i class="fas fa-user-plus"></i></div>
+                    <span>Karyawan</span>
+                </a>
+                <a href="tambah_pesanan.html" class="menu-item">
+                    <div class="icon-box adm-icon"><i class="fas fa-cart-plus"></i></div>
+                    <span>Pesanan</span>
+                </a>
+            </div>
+        </div>
+
+        <h4 class="section-title">Menu Utama</h4>
+        <div class="dashboard-grid">
+            <a href="hitung_gaji.html" class="menu-item">
+                <div class="icon-box inf-icon"><i class="fas fa-calculator"></i></div>
+                <span>Hitung Gaji</span>
+            </a>
+            <a href="bukti_pembayaran.html" class="menu-item">
+                <div class="icon-box gld-icon"><i class="fas fa-receipt"></i></div>
+                <span>Bukti Trf</span>
+            </a>
+            <a href="riwayat_terjual.html" class="menu-item">
+                <div class="icon-box trx-icon"><i class="fas fa-history"></i></div>
+                <span>Riwayat Jual</span>
+            </a>
+            <a href="pesanan.html" class="menu-item">
+                <div class="icon-box trx-icon"><i class="fas fa-clipboard-list"></i></div>
+                <span>Data Pesanan</span>
+            </a>
+            <a href="ulos.html" class="menu-item">
+                <div class="icon-box gld-icon"><i class="fas fa-images"></i></div>
+                <span>Galeri Ulos</span>
+            </a>
+            <a href="data_karyawan.html" class="menu-item">
+                <div class="icon-box gld-icon"><i class="fas fa-users"></i></div>
+                <span>Data Karyawan</span>
+            </a>
+            <a href="rekapan_gaji.html" class="menu-item">
+                <div class="icon-box inf-icon"><i class="fas fa-table"></i></div>
+                <span>Rekapan</span>
+            </a>
+            <a href="slip_gaji.html" class="menu-item">
+                <div class="icon-box inf-icon"><i class="fas fa-file-alt"></i></div>
+                <span>Slip Gaji</span>
+            </a>
+            <a href="tentang.html" class="menu-item">
+                <div class="icon-box" style="background:#eee;"><i class="fas fa-info"></i></div>
+                <span>Tentang</span>
+            </a>
+        </div>
+    </div>
+
+
+    <div class="bottom-nav">
+        <a href="dashboard.html" class="nav-item active"><i class="fas fa-home"></i><span>Home</span></a>
+        <a href="pesanan.html" class="nav-item"><i class="fas fa-clipboard-list"></i><span>Pesanan</span></a>
+        <a href="rekapan_gaji.html" class="nav-item"><i class="fas fa-table"></i><span>Rekapan</span></a>
+        <a href="slip_gaji.html" class="nav-item"><i class="fas fa-file-invoice"></i><span>Slip Gaji</span></a>
+    </div>
+    
+    <script type="module" src="main.js?v=51"></script>
+</body>
+</html>

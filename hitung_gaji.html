@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hitung Gaji</title>
+    <link rel="stylesheet" href="style.css?v=9999">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body id="page-hitung-gaji">
+    
+    <div class="navbar">
+        <a href="dashboard.html" class="nav-btn"><i class="fas fa-arrow-left"></i></a>
+        <div class="brand-text">
+            <h2>Hitung Gaji</h2>
+            <p>Kalkulator Upah</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <form id="formGaji">
+                <h4 style="margin-bottom:15px; color:#800000; border-bottom:1px solid #eee; padding-bottom:5px;">Data Produksi</h4>
+                
+                <div class="form-group">
+                    <label>Nama Karyawan</label>
+                    <select id="nama_karyawan" class="form-control" required>
+                        <option value="">-- Sedang memuat... --</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Jenis Ulos (Otomatis)</label>
+                    <select id="nama_ulos" class="form-control" required>
+                        <option value="">-- Sedang memuat... --</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Upah per Lembar (Rp)</label>
+                    <input type="number" id="upah_lembar" class="form-control" readonly style="background:#eee; color:#555;">
+                </div>
+
+                <div class="form-group">
+                    <label>Jumlah Lembar Selesai</label>
+                    <input type="number" id="jumlah" required class="form-control" placeholder="0">
+                </div>
+
+                <div class="form-group">
+                    <label>Biaya Pakan (Per Lembar)</label>
+                    <input type="number" id="pakan" value="0" class="form-control" placeholder="Contoh: 5000">
+                    <small style="color:#666; font-size:0.75rem;">*Akan dikali otomatis dengan jumlah lembar</small>
+                </div>
+
+                <h4 style="margin:20px 0 10px; color:#800000; border-bottom:1px solid #eee; padding-bottom:5px;">Potongan</h4>
+                
+                <div class="dashboard-grid" style="grid-template-columns: 1fr 1fr; gap:10px;">
+                    <div class="form-group"><label style="font-size:0.8rem;">Air/Listrik</label><input type="number" id="pot_air" placeholder="0" class="form-control"></div>
+                    <div class="form-group"><label style="font-size:0.8rem;">Wifi</label><input type="number" id="pot_wifi" placeholder="0" class="form-control"></div>
+                    <div class="form-group"><label style="font-size:0.8rem;">Stell</label><input type="number" id="pot_stell" placeholder="0" class="form-control"></div>
+                    <div class="form-group"><label style="font-size:0.8rem;">Lainnya</label><input type="number" id="pot_lain" placeholder="0" class="form-control"></div>
+                </div>
+
+                <div class="card" style="background: #e3f2fd; border: 1px solid #bbdefb; margin-top:15px; padding:15px;">
+                    <button type="button" id="btnHitung" class="btn btn-warning" style="width:100%; margin-bottom:10px; font-weight:bold;">
+                        <i class="fas fa-calculator"></i> HITUNG SEKARANG
+                    </button>
+                    
+                    <div class="form-group" style="text-align:center;">
+                        <label style="color:#0d47a1;">Total Gaji Bersih</label>
+                        <input type="text" id="gaji_bersih_tampil" readonly style="font-size: 1.8rem; font-weight: bold; color: #0d47a1; width:100%; border:none; background:transparent; text-align:center;" value="Rp 0">
+                        <input type="hidden" id="gajiBersih"> </div>
+                </div>
+
+                <button type="submit" id="btnSimpan" class="btn btn-success" style="margin-top:10px; width:100%;">Simpan Data Gaji</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="bottom-nav" style="position: fixed; bottom: 0; left: 0; width: 100%; height: 70px; background: #ffffff; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #ddd; z-index: 99999; box-shadow: 0 -4px 10px rgba(0,0,0,0.1);">
+        <a href="dashboard.html" class="nav-item"><i class="fas fa-home"></i><span>Home</span></a>
+        <a href="pesanan.html" class="nav-item"><i class="fas fa-clipboard-list"></i><span>Pesanan</span></a>
+        <a href="data_karyawan.html" class="nav-item"><i class="fas fa-users"></i><span>Karyawan</span></a>
+        <a href="slip_gaji.html" class="nav-item active" style="color:#800000;font-weight:bold;"><i class="fas fa-wallet"></i><span>Keuangan</span></a>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, addDoc, query, orderBy, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAXM4yJgh9F7ajGQApB-Ux1itQ_3pkik_o",
+            authDomain: "borsin-tenun-app.firebaseapp.com",
+            projectId: "borsin-tenun-app",
+            storageBucket: "borsin-tenun-app.firebasestorage.app",
+            messagingSenderId: "718889934564",
+            appId: "1:718889934564:web:c28a073e261d6783d096f1"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        const formatRupiah = (n) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
+        const parseNumber = (val) => { if (!val) return 0; const str = String(val).replace(/[^0-9.-]+/g,""); return Number(str) || 0; };
+
+        // Variabel Penyimpan Data
+        let ulosMap = {}; // Harga Upah
+        let karyawanMap = {}; // Info Bank & Rekening
+
+        // Cek Login
+        onAuthStateChanged(auth, (user) => {
+            if (!user) window.location.href = 'login.html';
+            else loadData();
+        });
+
+        async function loadData() {
+            const dropKar = document.getElementById('nama_karyawan');
+            const dropUlos = document.getElementById('nama_ulos');
+
+            try {
+                // 1. Load Karyawan
+                const qKar = query(collection(db, "karyawan"), orderBy("nama"));
+                const snapKar = await getDocs(qKar);
+                
+                dropKar.innerHTML = '<option value="">-- Pilih Karyawan --</option>';
+                snapKar.forEach(doc => {
+                    const d = doc.data();
+                    dropKar.innerHTML += `<option value="${d.nama}">${d.nama}</option>`;
+                    // Simpan info penting untuk Slip Gaji
+                    karyawanMap[d.nama] = {
+                        rekening: d.rekening || '-',
+                        bank: d.bank || '-',
+                        nama_rekening: d.nama_rekening || '',
+                        foto_qris: d.foto_qris || ''
+                    };
+                });
+
+                // 2. Load Ulos
+                const qUlos = query(collection(db, "ulos"), orderBy("nama"));
+                const snapUlos = await getDocs(qUlos);
+                
+                dropUlos.innerHTML = '<option value="">-- Pilih Ulos --</option>';
+                snapUlos.forEach(doc => {
+                    const d = doc.data();
+                    dropUlos.innerHTML += `<option value="${d.nama}">${d.nama}</option>`;
+                    ulosMap[d.nama] = d.upah || 0; // Simpan harga upah
+                });
+
+            } catch (e) {
+                alert("Gagal memuat data: " + e.message);
+            }
+        }
+
+        // Event: Ulos Dipilih -> Isi Upah Otomatis
+        document.getElementById('nama_ulos').addEventListener('change', function() {
+            const upah = ulosMap[this.value] || 0;
+            document.getElementById('upah_lembar').value = upah;
+        });
+
+        // Event: Hitung Gaji
+        document.getElementById('btnHitung').addEventListener('click', () => {
+            const upah = parseNumber(document.getElementById('upah_lembar').value);
+            const jumlah = parseNumber(document.getElementById('jumlah').value);
+            const pakanPerLembar = parseNumber(document.getElementById('pakan').value);
+            
+            const pot = parseNumber(document.getElementById('pot_air').value) + 
+                        parseNumber(document.getElementById('pot_wifi').value) + 
+                        parseNumber(document.getElementById('pot_stell').value) + 
+                        parseNumber(document.getElementById('pot_lain').value);
+
+            // Rumus: (Upah x Jml) - (Pakan/lembar x Jml) - Potongan
+            const totalPakan = pakanPerLembar * jumlah;
+            const gajiKotor = upah * jumlah;
+            const gajiBersih = gajiKotor - totalPakan - pot;
+
+            document.getElementById('gaji_bersih_tampil').value = formatRupiah(gajiBersih);
+            document.getElementById('gajiBersih').value = gajiBersih; // Simpan angka murni
+        });
+
+        // Event: Simpan Data
+        document.getElementById('formGaji').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btnSimpan');
+            btn.innerText = "Menyimpan..."; btn.disabled = true;
+
+            try {
+                const namaKar = document.getElementById('nama_karyawan').value;
+                const jumlah = parseNumber(document.getElementById('jumlah').value);
+                const pakanPerLembar = parseNumber(document.getElementById('pakan').value);
+                
+                // Siapkan Data Lengkap
+                const data = {
+                    nama_karyawan: namaKar,
+                    nama_ulos: document.getElementById('nama_ulos').value,
+                    jumlah: jumlah,
+                    pakan: pakanPerLembar * jumlah, // Simpan TOTAL Pakan
+                    pot_air: parseNumber(document.getElementById('pot_air').value),
+                    pot_wifi: parseNumber(document.getElementById('pot_wifi').value),
+                    pot_stell: parseNumber(document.getElementById('pot_stell').value),
+                    pot_lain: parseNumber(document.getElementById('pot_lain').value),
+                    gajiBersih: parseNumber(document.getElementById('gajiBersih').value),
+                    timestamp: new Date(),
+                    
+                    // Copy Data Rekening dari Karyawan (Agar aman di masa depan)
+                    rekening: karyawanMap[namaKar]?.rekening || '',
+                    bank: karyawanMap[namaKar]?.bank || '',
+                    nama_rekening: karyawanMap[namaKar]?.nama_rekening || '',
+                    foto_qris: karyawanMap[namaKar]?.foto_qris || ''
+                };
+
+                await addDoc(collection(db, "gaji"), data);
+                
+                alert("Gaji Berhasil Disimpan!");
+                window.location.href = "slip_gaji.html";
+
+            } catch (error) {
+                alert("Gagal simpan: " + error.message);
+                btn.innerText = "Simpan Data Gaji"; btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

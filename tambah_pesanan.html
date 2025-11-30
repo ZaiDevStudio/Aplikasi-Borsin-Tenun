@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tambah Pesanan</title>
+    <link rel="stylesheet" href="style.css?v=9999">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Jarak bawah agar tidak tertutup navigasi */
+        .container { padding-bottom: 100px; }
+    </style>
+</head>
+<body id="page-tambah-pesanan">
+    
+    <div class="navbar">
+        <a href="dashboard.html" class="nav-btn"><i class="fas fa-arrow-left"></i></a>
+        <div class="brand-text">
+            <h2>Input Pesanan</h2>
+            <p>Order Masuk</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <form id="formPesanan">
+                
+                <div class="form-group">
+                    <label>Pilih Ulos</label>
+                    <select id="nama_ulos" class="form-control" required>
+                        <option value="">-- Sedang mengambil data... --</option>
+                    </select>
+                    
+                    <img id="preview_foto" src="" style="display:none; width: 100%; max-width: 200px; margin-top: 10px; border-radius: 10px; border: 1px solid #ddd; padding: 2px;">
+                </div>
+
+                <div class="form-group">
+                    <label>Jumlah (Lembar)</label>
+                    <input type="number" id="jumlah" required class="form-control" placeholder="Contoh: 5">
+                </div>
+
+                <div class="form-group">
+                    <label>Dikerjakan Oleh</label>
+                    <select id="nama_karyawan" class="form-control" required>
+                        <option value="">-- Sedang mengambil data... --</option>
+                    </select>
+                </div>
+
+                <button type="submit" id="btnSimpan" class="btn btn-success" style="margin-top:15px;">Kirim Pesanan</button>
+            </form>
+        </div>
+    </div>
+    
+    <div class="bottom-nav" style="position: fixed; bottom: 0; left: 0; width: 100%; height: 70px; background: #ffffff; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #ddd; z-index: 99999; box-shadow: 0 -4px 10px rgba(0,0,0,0.1);">
+        <a href="dashboard.html" class="nav-item"><i class="fas fa-home" style="font-size:1.4rem;margin-bottom:4px;"></i><span>Home</span></a>
+        <a href="pesanan.html" class="nav-item active" style="color:#800000;font-weight:bold;text-align:center;font-size:0.75rem;display:flex;flex-direction:column;align-items:center;"><i class="fas fa-clipboard-list" style="font-size:1.4rem;margin-bottom:4px;"></i><span>Pesanan</span></a>
+        <a href="data_karyawan.html" class="nav-item" style="text-decoration:none;color:#999;text-align:center;font-size:0.75rem;display:flex;flex-direction:column;align-items:center;"><i class="fas fa-users" style="font-size:1.4rem;margin-bottom:4px;"></i><span>Karyawan</span></a>
+        <a href="slip_gaji.html" class="nav-item" style="text-decoration:none;color:#999;text-align:center;font-size:0.75rem;display:flex;flex-direction:column;align-items:center;"><i class="fas fa-wallet" style="font-size:1.4rem;margin-bottom:4px;"></i><span>Keuangan</span></a>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, addDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAXM4yJgh9F7ajGQApB-Ux1itQ_3pkik_o",
+            authDomain: "borsin-tenun-app.firebaseapp.com",
+            projectId: "borsin-tenun-app",
+            storageBucket: "borsin-tenun-app.firebasestorage.app",
+            messagingSenderId: "718889934564",
+            appId: "1:718889934564:web:c28a073e261d6783d096f1"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        
+        let ulosMap = {}; 
+
+        // 1. LOAD DATA
+        async function loadData() {
+            const dropUlos = document.getElementById('nama_ulos');
+            const dropKar = document.getElementById('nama_karyawan');
+
+            try {
+                const qUlos = query(collection(db, "ulos"), orderBy("nama"));
+                const snapUlos = await getDocs(qUlos);
+                
+                dropUlos.innerHTML = '<option value="">-- Pilih Ulos --</option>';
+                if(snapUlos.empty) dropUlos.innerHTML = '<option value="">Data Ulos Kosong</option>';
+                
+                snapUlos.forEach(doc => {
+                    const d = doc.data();
+                    dropUlos.innerHTML += `<option value="${d.nama}">${d.nama}</option>`;
+                    ulosMap[d.nama] = d.foto;
+                });
+
+                const qKar = query(collection(db, "karyawan"), orderBy("nama"));
+                const snapKar = await getDocs(qKar);
+
+                dropKar.innerHTML = '<option value="">-- Pilih Karyawan --</option>';
+                if(snapKar.empty) dropKar.innerHTML = '<option value="">Data Karyawan Kosong</option>';
+
+                snapKar.forEach(doc => {
+                    const d = doc.data();
+                    dropKar.innerHTML += `<option value="${d.nama}">${d.nama}</option>`;
+                });
+
+            } catch (error) {
+                alert("Gagal memuat data: " + error.message);
+            }
+        }
+
+        // 2. PREVIEW FOTO
+        document.getElementById('nama_ulos').addEventListener('change', function() {
+            const nama = this.value;
+            const img = document.getElementById('preview_foto');
+            
+            if (nama && ulosMap[nama]) {
+                img.src = ulosMap[nama];
+                img.style.display = 'block';
+            } else {
+                img.style.display = 'none';
+                img.src = '';
+            }
+        });
+
+        // 3. SIMPAN
+        document.getElementById('formPesanan').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btnSimpan');
+            btn.innerText = "Menyimpan..."; btn.disabled = true;
+
+            try {
+                const data = {
+                    nama_ulos: document.getElementById('nama_ulos').value,
+                    jumlah: Number(document.getElementById('jumlah').value),
+                    nama_karyawan: document.getElementById('nama_karyawan').value,
+                    foto: document.getElementById('preview_foto').src || '',
+                    timestamp: new Date()
+                };
+
+                await addDoc(collection(db, "pesanan"), data);
+                
+                alert("Pesanan Berhasil Disimpan!");
+                window.location.href = "pesanan.html";
+
+            } catch (error) {
+                alert("Gagal: " + error.message);
+                btn.innerText = "Kirim Pesanan"; btn.disabled = false;
+            }
+        });
+
+        loadData();
+    </script>
+</body>
+</html>
