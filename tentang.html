@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tentang Aplikasi</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+        * { box-sizing: border-box; font-family: 'Poppins', sans-serif; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        
+        body { background-color: #F5F7FA; color: #333; min-height: 100vh; padding-bottom: 100px; }
+
+        /* HEADER MEWAH */
+        .navbar {
+            background: linear-gradient(135deg, #800000 0%, #580000 100%);
+            color: white; padding: 25px 20px 50px; display: flex; align-items: center;
+            border-bottom-left-radius: 30px; border-bottom-right-radius: 30px;
+            box-shadow: 0 10px 20px rgba(128, 0, 0, 0.2);
+            position: relative; z-index: 10;
+        }
+        .nav-btn { color: white; font-size: 1.2rem; margin-right: 15px; cursor: pointer; }
+        .brand-text h2 { font-size: 1.4rem; font-weight: 700; margin: 0; }
+        .brand-text p { font-size: 0.85rem; margin: 0; opacity: 0.8; font-weight: 300; }
+
+        /* KARTU TENTANG */
+        .container { padding: 0 20px; margin-top: -35px; position: relative; z-index: 20; max-width: 600px; margin: 0 auto; }
+        
+        .card {
+            background: white; border-radius: 20px; padding: 30px 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            text-align: center;
+            border: 1px solid rgba(0,0,0,0.02);
+        }
+
+        /* LOGO BESAR */
+        .about-logo {
+            width: 110px; height: 110px;
+            border-radius: 50%;
+            border: 4px solid #D4AF37; /* Emas */
+            padding: 3px; background: white;
+            object-fit: cover;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+            margin-bottom: 20px;
+        }
+
+        /* TEKS */
+        h3 { margin: 0; color: #800000; font-weight: 700; font-size: 1.3rem; }
+        .version-badge {
+            background: #fff8e1; color: #f57f17; 
+            padding: 5px 15px; border-radius: 20px; 
+            font-size: 0.75rem; font-weight: 600;
+            display: inline-block; margin: 10px 0 20px;
+            border: 1px solid #ffe0b2;
+        }
+        .desc { color: #666; font-size: 0.9rem; line-height: 1.6; margin-bottom: 25px; }
+
+        .divider { height: 1px; background: #eee; margin: 20px 40px; }
+
+        .dev-label { font-size: 0.75rem; color: #999; text-transform: uppercase; letter-spacing: 1px; }
+        .dev-name { color: #333; font-weight: 600; font-size: 1rem; margin-top: 5px; }
+
+        /* TOMBOL SOSMED */
+        .social-box { margin-top: 20px; display: flex; justify-content: center; gap: 15px; }
+        .social-btn {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: #f5f5f5; color: #555;
+            display: flex; align-items: center; justify-content: center;
+            text-decoration: none; transition: 0.3s;
+        }
+        .social-btn:hover { background: #800000; color: white; transform: translateY(-3px); }
+
+        /* COPYRIGHT */
+        .footer-text { margin-top: 30px; font-size: 0.7rem; color: #ccc; }
+
+        /* NAVIGASI BAWAH */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 70px;
+            background: #ffffff; display: flex; justify-content: space-around; align-items: center;
+            border-top: 1px solid #ddd; z-index: 99999; box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
+        }
+        .nav-item { text-decoration: none; color: #999; text-align: center; font-size: 0.7rem; display: flex; flex-direction: column; align-items: center; width: 25%; }
+        .nav-item i { font-size: 1.4rem; margin-bottom: 4px; }
+        .nav-item.active { color: #800000; font-weight: bold; }
+    </style>
+</head>
+<body id="page-tentang">
+    
+    <div class="navbar">
+        <a href="dashboard.html" class="nav-btn"><i class="fas fa-arrow-left"></i></a>
+        <div class="brand-text">
+            <h2>Tentang</h2>
+            <p>Informasi Aplikasi</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <img src="borsin.png" class="about-logo">
+            
+            <h3>Borsin Tenun</h3>
+            <span class="version-badge">Versi 1.0 (Stable)</span>
+            
+            <p class="desc">
+                Aplikasi manajemen produksi dan keuangan terintegrasi untuk UMKM Tenun Borsin. Memudahkan pencatatan stok, pesanan, dan penggajian karyawan secara digital.
+            </p>
+
+            <div class="divider"></div>
+
+            <p class="dev-label">Dikembangkan Oleh</p>
+            <div class="dev-name">Yeriyuma Zai, AMd.Kom</div>
+
+            <div class="social-box">
+                <a href="#" class="social-btn"><i class="fab fa-whatsapp"></i></a>
+                <a href="#" class="social-btn"><i class="fab fa-instagram"></i></a>
+                <a href="#" class="social-btn"><i class="fab fa-facebook-f"></i></a>
+            </div>
+
+            <p class="footer-text">&copy; 2025 All Rights Reserved</p>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <a href="dashboard.html" class="nav-item"><i class="fas fa-home"></i><span>Home</span></a>
+        <a href="pesanan.html" class="nav-item"><i class="fas fa-clipboard-list"></i><span>Pesanan</span></a>
+        <a href="data_karyawan.html" class="nav-item"><i class="fas fa-users"></i><span>Karyawan</span></a>
+        <a href="slip_gaji.html" class="nav-item"><i class="fas fa-wallet"></i><span>Keuangan</span></a>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAXM4yJgh9F7ajGQApB-Ux1itQ_3pkik_o",
+            authDomain: "borsin-tenun-app.firebaseapp.com",
+            projectId: "borsin-tenun-app",
+            storageBucket: "borsin-tenun-app.firebasestorage.app",
+            messagingSenderId: "718889934564",
+            appId: "1:718889934564:web:c28a073e261d6783d096f1"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        onAuthStateChanged(auth, (user) => {
+            if (!user) window.location.href = 'login.html';
+        });
+    </script>
+</body>
+</html>

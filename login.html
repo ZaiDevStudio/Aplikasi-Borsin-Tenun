@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Masuk - Borsin Tenun</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+        * { box-sizing: border-box; font-family: 'Poppins', sans-serif; margin: 0; padding: 0; }
+        
+        body { 
+            background: linear-gradient(135deg, #800000 0%, #2c0000 100%); 
+            min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px;
+        }
+        .login-card {
+            background: white; width: 100%; max-width: 350px; border-radius: 20px; 
+            padding: 50px 25px 30px; text-align: center; position: relative;
+            border: 2px solid #D4AF37; box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+        }
+        .login-logo {
+            width: 90px; height: 90px; border-radius: 50%; object-fit: cover;
+            border: 4px solid #D4AF37; background: white; position: absolute;
+            top: -45px; left: 50%; transform: translateX(-50%);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .login-title { margin-top: 20px; color: #800000; font-size: 1.5rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+        .login-subtitle { color: #666; font-size: 0.8rem; margin-bottom: 25px; }
+        
+        /* FORM STYLE */
+        .form-group { text-align: left; margin-bottom: 15px; }
+        .form-group label { display:block; margin-bottom:5px; font-size: 0.8rem; color: #555; font-weight:600; }
+        
+        /* Wrapper Input agar ikon bisa di dalam */
+        .input-wrapper { position: relative; display: flex; align-items: center; }
+        
+        .form-control {
+            width: 100%; padding: 12px 15px; border: 1px solid #ddd; background: #f9f9f9;
+            border-radius: 25px; outline: none; font-size: 0.9rem; transition:0.3s;
+            padding-right: 40px; /* Beri ruang untuk ikon mata */
+        }
+        .form-control:focus { border-color: #D4AF37; background: white; box-shadow: 0 0 5px rgba(212, 175, 55, 0.3); }
+        
+        /* Ikon Mata */
+        .toggle-password {
+            position: absolute; right: 15px; color: #888; cursor: pointer; font-size: 1rem;
+        }
+        .toggle-password:hover { color: #800000; }
+
+        .btn-login {
+            background: linear-gradient(to right, #800000, #b71c1c); color: white;
+            font-weight: bold; border: none; padding: 12px; border-radius: 25px;
+            width: 100%; margin-top: 10px; cursor: pointer; box-shadow: 0 5px 15px rgba(128,0,0,0.3);
+        }
+        .btn-outline {
+            background: white; border: 2px solid #800000; color: #800000;
+            font-weight: bold; padding: 12px; border-radius: 25px; width: 100%; margin-top: 10px; cursor: pointer;
+        }
+        .hidden { display: none !important; }
+        .text-link { color: #D4AF37; font-weight: bold; cursor: pointer; text-decoration: none; font-size:0.85rem; }
+    </style>
+</head>
+<body id="page-login">
+    <div class="login-card">
+        <img src="borsin.png" class="login-logo">
+        
+        <div id="box-login">
+            <h2 class="login-title">Selamat Datang</h2>
+            <p class="login-subtitle">Aplikasi Borsin Tenun</p>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="email" placeholder="Email" required class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Kata Sandi</label>
+                    <div class="input-wrapper">
+                        <input type="password" id="password" placeholder="Sandi" required class="form-control">
+                        <i class="fas fa-eye toggle-password" id="toggleLogin"></i>
+                    </div>
+                </div>
+                <button type="submit" class="btn-login" id="btnLogin">MASUK</button>
+            </form>
+            
+            <p style="margin-top:20px;">Belum punya akun? <a class="text-link" id="goDaftar">Buat Akun</a></p>
+        </div>
+
+        <div id="box-daftar" class="hidden">
+            <h2 class="login-title">Buat Akun</h2>
+            <p class="login-subtitle">Daftar Karyawan Baru</p>
+            
+            <form id="daftarForm">
+                <div class="form-group">
+                    <label>Nama Lengkap</label>
+                    <input type="text" id="reg_nama" placeholder="Nama Lengkap" required class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="reg_email" placeholder="Email" required class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Kata Sandi (Min 6)</label>
+                    <div class="input-wrapper">
+                        <input type="password" id="reg_pass" placeholder="Sandi" required class="form-control">
+                        <i class="fas fa-eye toggle-password" id="toggleReg"></i>
+                    </div>
+                </div>
+                <button type="submit" class="btn-outline" id="btnDaftar">DAFTAR SEKARANG</button>
+            </form>
+            
+            <p style="margin-top:20px;">Sudah punya akun? <a class="text-link" id="goLogin">Login</a></p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+        const app = initializeApp({apiKey:"AIzaSyAXM4yJgh9F7ajGQApB-Ux1itQ_3pkik_o",authDomain:"borsin-tenun-app.firebaseapp.com",projectId:"borsin-tenun-app",storageBucket:"borsin-tenun-app.firebasestorage.app",messagingSenderId:"718889934564",appId:"1:718889934564:web:c28a073e261d6783d096f1"});
+        const auth = getAuth(app); 
+        const db = getFirestore(app);
+
+        onAuthStateChanged(auth, u => { if(u) window.location.href='dashboard.html'; });
+
+        // LOGIKA LOGIN
+        document.getElementById('loginForm').onsubmit = e => {
+            e.preventDefault();
+            const btn = document.getElementById('btnLogin'); btn.innerText="Memuat..."; btn.disabled=true;
+            signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value)
+                .catch(er => { alert(er.message); btn.innerText="MASUK"; btn.disabled=false; });
+        };
+
+        // LOGIKA DAFTAR
+        document.getElementById('daftarForm').onsubmit = e => {
+            e.preventDefault();
+            const btn = document.getElementById('btnDaftar'); btn.innerText="Proses..."; btn.disabled=true;
+            createUserWithEmailAndPassword(auth, document.getElementById('reg_email').value, document.getElementById('reg_pass').value)
+                .then(async c => {
+                    await setDoc(doc(db, "users", c.user.uid), {
+                        nama: document.getElementById('reg_nama').value,
+                        email: c.user.email,
+                        role: 'user',
+                        createdAt: new Date()
+                    });
+                    alert("Berhasil Daftar!");
+                })
+                .catch(er => { alert(er.message); btn.innerText="DAFTAR SEKARANG"; btn.disabled=false; });
+        };
+
+        // NAVIGASI GANTI FORM
+        document.getElementById('goDaftar').onclick = () => {
+            document.getElementById('box-login').classList.add('hidden');
+            document.getElementById('box-daftar').classList.remove('hidden');
+        };
+        document.getElementById('goLogin').onclick = () => {
+            document.getElementById('box-login').classList.remove('hidden');
+            document.getElementById('box-daftar').classList.add('hidden');
+        };
+        
+        if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
+
+        // --- LOGIKA LIHAT SANDI (MATA) ---
+        function setupToggle(iconId, inputId) {
+            const icon = document.getElementById(iconId);
+            const input = document.getElementById(inputId);
+            
+            icon.addEventListener('click', function() {
+                // Cek tipe sekarang
+                const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+                input.setAttribute('type', type);
+                
+                // Ganti Ikon
+                this.classList.toggle('fa-eye');
+                this.classList.toggle('fa-eye-slash');
+            });
+        }
+
+        // Pasang di kedua form (Login & Daftar)
+        setupToggle('toggleLogin', 'password');
+        setupToggle('toggleReg', 'reg_pass');
+
+    </script>
+</body>
+</html>

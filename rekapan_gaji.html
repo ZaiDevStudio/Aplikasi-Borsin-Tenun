@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rekapan Gaji</title>
+    <link rel="stylesheet" href="style.css?v=9999">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+        * { box-sizing: border-box; font-family: 'Poppins', sans-serif; margin: 0; padding: 0; }
+
+        body { background-color: #F5F7FA; color: #333; padding-bottom: 100px; margin: 0; }
+
+        /* HEADER ATAS */
+        .navbar {
+            background: linear-gradient(135deg, #800000 0%, #580000 100%);
+            color: white; padding: 20px 20px 40px; display: flex; align-items: center;
+            border-bottom-left-radius: 30px; border-bottom-right-radius: 30px;
+            box-shadow: 0 5px 15px rgba(128,0,0,0.2); position: sticky; top: 0; z-index: 50;
+        }
+        .nav-btn { color: white; font-size: 1.2rem; margin-right: 15px; cursor: pointer; }
+        .brand-text h2 { font-size: 1.2rem; margin: 0; font-weight: 700; } 
+        .brand-text p { font-size: 0.8rem; opacity: 0.8; margin: 0; }
+
+        .container { padding: 10px; margin-top: -30px; position: relative; z-index: 60; }
+        
+        .table-card {
+            background: white; border-radius: 15px; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            overflow: hidden; border: 1px solid #eee;
+            margin-bottom: 15px;
+        }
+        .table-scroll { overflow-x: auto; max-height: 70vh; }
+
+        /* TABEL */
+        table { width: 100%; border-collapse: collapse; font-size: 0.7rem; font-family: sans-serif; }
+        th, td { padding: 8px 6px; border-bottom: 1px solid #eee; white-space: nowrap; height: 45px; vertical-align: middle; }
+
+        /* HEADER MERAH (JUDUL KOLOM) */
+        thead th {
+            background-color: #800000; color: white;
+            position: sticky; top: 0; z-index: 40;
+            text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;
+            border-right: 1px solid rgba(255,255,255,0.1); text-align: center;
+        }
+
+        /* --- PENGATURAN KUNCI KOLOM KIRI (NO & NAMA) --- */
+        
+        /* Header NO & NAMA (Wajib Merah) */
+        thead th:nth-child(1), thead th:nth-child(2) {
+            position: sticky; z-index: 50;
+            background-color: #800000 !important; /* PAKSA MERAH */
+            color: white !important;
+        }
+        thead th:nth-child(1) { left: 0; width: 30px; border-right: 1px solid #ff9999; }
+        thead th:nth-child(2) { left: 30px; width: 90px; border-right: 2px solid white; }
+
+        /* Isi Data NO & NAMA (Wajib Putih agar tidak transparan saat digeser) */
+        tbody td:nth-child(1), tbody td:nth-child(2) {
+            position: sticky; z-index: 30;
+            background-color: #fff; /* Tetap putih untuk isi */
+        }
+        tbody td:nth-child(1) { left: 0; border-right: 1px solid #eee; text-align: center; }
+        tbody td:nth-child(2) { left: 30px; border-right: 2px solid #800000; font-weight: bold; color: #333; }
+        
+        /* Warna Belang untuk Sticky */
+        tbody tr:nth-child(even) td:nth-child(1), 
+        tbody tr:nth-child(even) td:nth-child(2) { background-color: #fcfcfc; }
+
+        /* --- FOOTER (TOTAL) TIDAK STICKY LAGI --- */
+        tfoot td {
+            background: #fff8e1; /* Warna beda dikit */
+            font-weight: bold; font-size: 0.7rem;
+            border-top: 2px solid #800000; color: #333;
+        }
+        /* Kolom kiri footer tetap sticky ke kiri, tapi TIDAK sticky ke bawah */
+        tfoot td:nth-child(1) { position: sticky; left: 0; background: #fff8e1; z-index: 35; }
+        tfoot td:nth-child(2) { position: sticky; left: 30px; background: #fff8e1; z-index: 35; border-right: 2px solid #800000; text-align: right; }
+
+        /* ALIGNMENT */
+        .text-right { text-align: right; } .text-center { text-align: center; }
+
+        /* TOMBOL AKSI */
+        .btn-mini { width: 28px; height: 28px; border-radius: 50%; border: none; color: white; font-size: 0.7rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; margin: 0 2px; }
+        .btn-edit { background: #FFB300; color: #333; }
+        .btn-del { background: #D32F2F; color: white; }
+
+        /* RINGKASAN */
+        .summary-box { background: #fff8e1; border: 1px solid #ffe0b2; border-radius: 12px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .sum-row { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.85rem; color: #555; }
+        .sum-total { display: flex; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #f57c00; font-weight: bold; font-size: 1.1rem; color: #e65100; }
+
+        /* NAVIGASI */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 70px; background: #ffffff; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #ddd; z-index: 999; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); }
+        .nav-item { text-decoration: none; color: #999; text-align: center; font-size: 0.7rem; display: flex; flex-direction: column; align-items: center; }
+        .nav-item.active { color: #800000; font-weight: bold; } .nav-item i { font-size: 1.4rem; margin-bottom: 4px; }
+    </style>
+</head>
+<body id="page-rekapan-gaji">
+    
+    <div class="navbar no-print">
+        <a href="dashboard.html" class="nav-btn"><i class="fas fa-arrow-left"></i></a>
+        <div class="brand-text"><h2>Rekapan Gaji</h2><p>Laporan Keuangan</p></div>
+        <i class="fas fa-file-excel nav-btn" onclick="exportExcel()" title="Download Excel" style="margin-left: auto;"></i>
+    </div>
+
+    <div class="container">
+        <div class="table-card">
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width:30px">NO</th>
+                            <th style="width:90px">NAMA</th>
+                            <th>ULOS</th>
+                            <th>PAKAN</th>
+                            <th>POT. LAIN</th>
+                            <th>BERSIH</th>
+                            <th style="width:80px">AKSI</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbodyGaji"><tr><td colspan="7" class="text-center" style="padding:20px;">Memuat data...</td></tr></tbody>
+                    <tfoot>
+                        <tr>
+                            <td></td><td>TOTAL:</td><td class="text-center"><span id="t_ulos">0</span></td><td class="text-right" style="color:red;" id="t_pakan">0</td><td class="text-center">-</td><td class="text-right" style="color:green;" id="t_gaji">0</td><td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <div class="summary-box">
+            <h4 style="margin:0 0 10px; color:#e65100; font-size:0.9rem; text-transform:uppercase;">Ringkasan Periode Ini</h4>
+            <div class="sum-row"><span>Total Ulos Selesai:</span><strong id="info_ulos">0 Lembar</strong></div>
+            <div class="sum-row"><span>Total Biaya Pakan:</span><strong id="info_pakan" style="color:red;">Rp 0</strong></div>
+            <div class="sum-total"><span>Total Gaji Keluar:</span><span id="info_gaji">Rp 0</span></div>
+        </div>
+    </div>
+
+    <div class="bottom-nav no-print">
+        <a href="dashboard.html" class="nav-item"><i class="fas fa-home"></i><span>Home</span></a>
+        <a href="pesanan.html" class="nav-item"><i class="fas fa-clipboard-list"></i><span>Pesanan</span></a>
+        <a href="data_karyawan.html" class="nav-item"><i class="fas fa-users"></i><span>Karyawan</span></a>
+        <a href="slip_gaji.html" class="nav-item active"><i class="fas fa-wallet"></i><span>Keuangan</span></a>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, deleteDoc, doc, query, orderBy, getDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyAXM4yJgh9F7ajGQApB-Ux1itQ_3pkik_o", authDomain: "borsin-tenun-app.firebaseapp.com", projectId: "borsin-tenun-app", storageBucket: "borsin-tenun-app.firebasestorage.app", messagingSenderId: "718889934564", appId: "1:718889934564:web:c28a073e261d6783d096f1" };
+        const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app);
+        const fmt = (n) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
+        const num = (val) => { if (!val) return 0; const str = String(val).replace(/[^0-9.-]+/g, ""); return Number(str) || 0; };
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                try { const d = await getDoc(doc(db, "users", user.uid)); loadRekapan(d.exists() && d.data().role === 'admin'); } 
+                catch (e) { loadRekapan(false); }
+            } else window.location.href = 'login.html';
+        });
+
+        async function loadRekapan(isAdmin) {
+            const tbody = document.getElementById('tbodyGaji');
+            const q = query(collection(db, "gaji"), orderBy("timestamp", "desc"));
+            const snap = await getDocs(q);
+            tbody.innerHTML = '';
+            if (snap.empty) { tbody.innerHTML = '<tr><td colspan="7" class="text-center" style="padding:20px;">Belum ada data.</td></tr>'; updateTotals(0,0,0); return; }
+
+            let tG = 0, tP = 0, tU = 0, no = 1;
+            snap.forEach(doc => {
+                const d = doc.data();
+                const p = num(d.pakan), j = num(d.jumlah), g = num(d.gajiBersih), pl = num(d.pot_air)+num(d.pot_wifi)+num(d.pot_stell)+num(d.pot_lain);
+                tG += g; tP += p; tU += j;
+
+                const aksi = isAdmin ? `<div style="display:flex;justify-content:center;gap:5px;"><a href="hitung_gaji.html?id=${doc.id}" class="btn-mini btn-edit">✏️</a><button onclick="hapusData('${doc.id}')" class="btn-mini btn-del">🗑️</button></div>` : '-';
+
+                tbody.innerHTML += `<tr><td>${no++}</td><td style="text-align:left;">${d.nama_karyawan}</td><td class="text-center">${d.nama_ulos}<br><small style="background:#eee;padding:1px 4px;border-radius:3px;">${j}</small></td><td class="text-right" style="color:red;">${fmt(p)}</td><td class="text-right">${fmt(pl)}</td><td class="text-right" style="font-weight:bold;color:green;">${fmt(g)}</td><td class="text-center">${aksi}</td></tr>`;
+            });
+            updateTotals(tU, tP, tG);
+        }
+
+        function updateTotals(u, p, g) {
+            document.getElementById('t_ulos').innerText = u; document.getElementById('t_pakan').innerText = fmt(p); document.getElementById('t_gaji').innerText = fmt(g);
+            document.getElementById('info_ulos').innerText = u + " Lembar"; document.getElementById('info_pakan').innerText = fmt(p); document.getElementById('info_gaji').innerText = fmt(g);
+        }
+
+        window.hapusData = async (id) => { if (confirm("Hapus?")) { await deleteDoc(doc(db, "gaji", id)); location.reload(); } };
+        window.exportExcel = () => { const t = document.querySelector("table"); const w = XLSX.utils.table_to_book(t); XLSX.writeFile(w, "Rekapan_Gaji_Borsin.xlsx"); };
+    </script>
+</body>
+</html>
