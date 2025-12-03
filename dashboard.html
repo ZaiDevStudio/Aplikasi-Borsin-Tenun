@@ -5,66 +5,81 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
         * { box-sizing: border-box; font-family: 'Poppins', sans-serif; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        body { background-color: #F5F7FA; color: #333; min-height: 100vh; padding-bottom: 100px; }
+        body { background-color: #F5F7FA; color: #2D3436; min-height: 100vh; padding-bottom: 100px; }
 
         /* HEADER */
         .navbar {
             background: linear-gradient(135deg, #800000 0%, #580000 100%);
-            color: white; padding: 20px 20px 40px; display: flex; align-items: center;
+            color: white; padding: 25px 20px 50px 20px; 
+            display: flex; align-items: center;
             border-bottom-left-radius: 30px; border-bottom-right-radius: 30px;
-            box-shadow: 0 10px 20px rgba(128,0,0,0.2); position: relative; z-index: 10;
+            box-shadow: 0 10px 20px rgba(128, 0, 0, 0.2);
+            position: relative; z-index: 10;
         }
-        .logo-circle { width: 55px; height: 55px; border-radius: 50%; border: 2px solid #D4AF37; background: white; object-fit: cover; margin-right: 15px; }
-        
-        /* TEKS SAPAAN */
+        .logo-circle {
+            width: 55px; height: 55px; border-radius: 50%;
+            border: 2px solid #D4AF37; background: white;
+            object-fit: cover; margin-right: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
         .brand-text h2 { font-size: 1.3rem; font-weight: 700; margin: 0; line-height: 1.2; text-transform: capitalize; }
         .brand-text p { font-size: 0.8rem; margin: 0; opacity: 0.9; background: rgba(255,255,255,0.15); padding: 2px 10px; border-radius: 10px; display: inline-block; margin-top: 5px; }
-
         .nav-btn { color: white; font-size: 1.2rem; margin-left: auto; cursor: pointer; opacity: 0.9; }
 
-        /* LAYOUT */
-        .container { padding: 0 20px; margin-top: -35px; position: relative; z-index: 20; max-width: 600px; margin: 0 auto; }
-        .section-title { font-size: 0.85rem; color: #636E72; margin: 20px 0 10px 5px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; border-left: 3px solid #D4AF37; padding-left: 8px; }
-        
-        /* GRID MENU */
+        /* CONTAINER */
+        .container { padding: 0 20px; margin-top: -35px; position: relative; z-index: 20; max-width: 600px; margin-left: auto; margin-right: auto; }
+        .section-title { font-size: 0.85rem; color: #636E72; margin: 25px 0 10px 5px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; border-left: 3px solid #D4AF37; padding-left: 8px; }
+
+        /* GRID */
         .dashboard-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
         .menu-item {
-            background: white; border-radius: 15px; padding: 15px 5px; text-decoration: none;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: #FFFFFF; border-radius: 15px; padding: 15px 5px;
+            text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center;
             box-shadow: 0 5px 15px rgba(0,0,0,0.05); height: 100px; border: 1px solid #eee; transition: 0.2s;
         }
         .menu-item:active { transform: scale(0.95); background: #f9f9f9; }
         .icon-box { width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; margin-bottom: 8px; }
-        .menu-item span { font-size: 0.7rem; color: #333; font-weight: 500; text-align: center; }
+        .menu-item span { font-size: 0.7rem; color: #2D3436; font-weight: 500; text-align: center; }
 
-        /* WARNA IKON */
+        /* COLORS */
         .adm-icon { background: #ffebee; color: #b71c1c; } .trx-icon { background: #e8f5e9; color: #2e7d32; }
         .inf-icon { background: #e3f2fd; color: #1565c0; } .gld-icon { background: #fff8e1; color: #fbc02d; }
         .grey-icon { background: #f5f5f5; color: #616161; }
         .admin-only { display: none; }
 
-        /* NAVIGASI */
+        /* NAV */
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; width: 100%; height: 70px;
-            background: white; display: flex; justify-content: space-around; align-items: center;
-            border-top: 1px solid #ddd; z-index: 999; box-shadow: 0 -5px 15px rgba(0,0,0,0.05);
+            background: #ffffff; display: flex; justify-content: space-around; align-items: center;
+            border-top: 1px solid #ddd; z-index: 999; box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
         }
         .nav-item { text-decoration: none; color: #bbb; text-align: center; font-size: 0.7rem; display: flex; flex-direction: column; align-items: center; width: 25%; }
         .nav-item.active { color: #800000; font-weight: bold; } .nav-item i { font-size: 1.4rem; margin-bottom: 4px; }
+        
+        /* BADGE NOTIFIKASI */
+        .menu-item { position: relative; }
+        .badge-notif {
+            position: absolute; top: 10px; right: 20px;
+            background: #ff3b30; color: white; font-size: 0.65rem; font-weight: bold;
+            min-width: 20px; height: 20px; border-radius: 50%;
+            display: none; align-items: center; justify-content: center;
+            border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 10;
+        }
     </style>
 </head>
 <body id="page-dashboard">
     
     <div class="navbar">
-        <img src="borsin.png" class="logo-circle">
+        <img src="borsin.png" class="logo-circle" alt="Logo">
         <div class="brand-text">
-            <h2 id="welcomeName">Halo, ...</h2>
-            <p id="userRole">Memuat...</p>
+            <h2 id="displayNama">Halo...</h2>
+            <p id="displayRole">Memuat...</p>
         </div>
-        <i class="fas fa-sign-out-alt nav-btn" id="btnLogout"></i>
+        <i class="fas fa-sign-out-alt nav-btn" id="btnLogout" title="Keluar"></i>
     </div>
 
     <div class="container">
@@ -74,21 +89,25 @@
                 <a href="tambah_terjual.html" class="menu-item"><div class="icon-box trx-icon"><i class="fas fa-shopping-cart"></i></div><span>Jual</span></a>
                 <a href="tambah_bukti.html" class="menu-item"><div class="icon-box adm-icon"><i class="fas fa-file-invoice-dollar"></i></div><span>Upload</span></a>
                 <a href="tambah_data_ulos.html" class="menu-item"><div class="icon-box adm-icon"><i class="fas fa-upload"></i></div><span>Ulos</span></a>
-                <a href="tambah_karyawan.html" class="menu-item"><div class="icon-box adm-icon"><i class="fas fa-user-plus"></i></div><span>Anggota</span></a>
+                <a href="tambah_karyawan.html" class="menu-item"><div class="icon-box adm-icon"><i class="fas fa-user-plus"></i></div><span>Pegawai</span></a>
                 <a href="tambah_pesanan.html" class="menu-item"><div class="icon-box adm-icon"><i class="fas fa-cart-plus"></i></div><span>Pesanan</span></a>
             </div>
         </div>
 
         <h4 class="section-title">Aktivitas Utama</h4>
         <div class="dashboard-grid">
-            <a href="chat.html" class="menu-item"><div class="icon-box inf-icon"><i class="fas fa-comments"></i></div><span>Diskusi</span></a>
-            <a href="hitung_gaji.html" class="menu-item"><div class="icon-box inf-icon"><i class="fas fa-calculator"></i></div><span>Hitung Gaji</span></a>
-            <a href="riwayat_terjual.html" class="menu-item"><div class="icon-box trx-icon"><i class="fas fa-history"></i></div><span>Riwayat Jual</span></a>
+            <a href="chat.html" class="menu-item">
+                <div class="icon-box inf-icon"><i class="fas fa-comments"></i></div>
+                <span>Diskusi</span>
+                <div id="chatBadge" class="badge-notif">0</div>
+            </a>
+            <a href="hitung_gaji.html" class="menu-item"><div class="icon-box inf-icon"><i class="fas fa-calculator"></i></div><span>Hitung</span></a>
+            <a href="riwayat_terjual.html" class="menu-item"><div class="icon-box trx-icon"><i class="fas fa-history"></i></div><span>Riwayat</span></a>
             <a href="pesanan.html" class="menu-item"><div class="icon-box trx-icon"><i class="fas fa-clipboard-list"></i></div><span>Pesanan</span></a>
             <a href="ulos.html" class="menu-item"><div class="icon-box gld-icon"><i class="fas fa-images"></i></div><span>Galeri</span></a>
-            <a href="data_karyawan.html" class="menu-item"><div class="icon-box gld-icon"><i class="fas fa-users"></i></div><span>Anggota</span></a>
+            <a href="data_karyawan.html" class="menu-item"><div class="icon-box gld-icon"><i class="fas fa-users"></i></div><span>Pegawai</span></a>
             <a href="rekapan_gaji.html" class="menu-item"><div class="icon-box inf-icon"><i class="fas fa-table"></i></div><span>Rekapan</span></a>
-            <a href="slip_gaji.html" class="menu-item"><div class="icon-box inf-icon"><i class="fas fa-receipt"></i></div><span>Slip Gaji</span></a>
+            <a href="slip_gaji.html" class="menu-item"><div class="icon-box inf-icon"><i class="fas fa-receipt"></i></div><span>Slip</span></a>
             <a href="bukti_pembayaran.html" class="menu-item"><div class="icon-box gld-icon"><i class="fas fa-receipt"></i></div><span>Bukti</span></a>
             <a href="tentang.html" class="menu-item"><div class="icon-box grey-icon"><i class="fas fa-info"></i></div><span>Tentang</span></a>
         </div>
@@ -97,42 +116,67 @@
     <div class="bottom-nav">
         <a href="dashboard.html" class="nav-item active"><i class="fas fa-home"></i><span>Home</span></a>
         <a href="pesanan.html" class="nav-item"><i class="fas fa-clipboard-list"></i><span>Pesanan</span></a>
-        <a href="data_karyawan.html" class="nav-item"><i class="fas fa-users"></i><span>Anggota</span></a>
+        <a href="data_karyawan.html" class="nav-item"><i class="fas fa-users"></i><span>Karyawan</span></a>
         <a href="slip_gaji.html" class="nav-item"><i class="fas fa-wallet"></i><span>Keuangan</span></a>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
         import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, collection, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyAXM4yJgh9F7ajGQApB-Ux1itQ_3pkik_o", authDomain: "borsin-tenun-app.firebaseapp.com", projectId: "borsin-tenun-app", storageBucket: "borsin-tenun-app.firebasestorage.app", messagingSenderId: "718889934564", appId: "1:718889934564:web:c28a073e261d6783d096f1" };
         const app = initializeApp(firebaseConfig); const auth = getAuth(app); const db = getFirestore(app);
 
         onAuthStateChanged(auth, async u => {
-            if(!u) window.location.href='login.html';
-            else {
+            if(!u) { 
+                window.location.href='login.html'; 
+            } else {
+                // 1. LOGIKA NAMA (FIXED)
+                let displayName = "Pengguna";
+                let displayRole = "Karyawan";
+                
                 try {
-                    const d = await getDoc(doc(db, "users", u.uid));
+                    const d = await getDoc(doc(db,"users",u.uid));
                     if (d.exists()) {
                         const data = d.data();
-                        // TAMPILKAN NAMA & ROLE
-                        const namaPanggilan = data.nama ? data.nama.split(' ')[0] : "User";
-                        document.getElementById('welcomeName').innerText = "Halo, " + namaPanggilan;
-                        
-                        const roleName = data.role === 'admin' ? 'Administrator' : 'Karyawan';
-                        document.getElementById('userRole').innerText = roleName;
+                        // Ambil nama dari Database
+                        if(data.nama) displayName = data.nama.split(' ')[0];
+                        // Atau ambil dari Email jika nama kosong
+                        else displayName = u.email.split('@')[0];
 
-                        // BUKA MENU ADMIN
-                        if (data.role === 'admin') document.getElementById('adm').style.display='block';
+                        if(data.role === 'admin') {
+                            displayRole = "Administrator";
+                            document.getElementById('adm').style.display='block';
+                        }
+                    } else {
+                        // Jika data tidak ada (user lama), pakai email
+                        displayName = u.email.split('@')[0];
                     }
-                } catch(e){ console.error(e); }
+                } catch(e) { 
+                    displayName = "User"; 
+                }
+
+                // TAMPILKAN KE LAYAR
+                document.getElementById('displayNama').innerText = "Halo, " + displayName;
+                document.getElementById('displayRole').innerText = displayRole;
+
+                // 2. LOGIKA NOTIFIKASI CHAT
+                cekPesan();
             }
         });
 
-        document.getElementById('btnLogout').onclick = () => {
-            if(confirm("Keluar dari aplikasi?")) signOut(auth);
-        };
+        function cekPesan() {
+            const last = localStorage.getItem('lastChatRead') ? new Date(localStorage.getItem('lastChatRead')) : new Date(0);
+            const q = query(collection(db, "chats"), where("timestamp", ">", last));
+            onSnapshot(q, s => {
+                const b = document.getElementById('chatBadge');
+                if(s.size > 0) { b.style.display='flex'; b.innerText = s.size > 9 ? '9+' : s.size; }
+                else { b.style.display='none'; }
+            });
+        }
+
+        document.getElementById('btnLogout').onclick=()=> { if(confirm("Keluar?")) signOut(auth); };
     </script>
 </body>
 </html>
