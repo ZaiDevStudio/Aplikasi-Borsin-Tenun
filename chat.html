@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diskusi Tim</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+        * { box-sizing: border-box; font-family: 'Poppins', sans-serif; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+        body { background-color: #E5DDD5; /* Warna Khas Chat App */ display: flex; flex-direction: column; height: 100vh; }
+
+        /* HEADER */
+        .navbar {
+            background: linear-gradient(135deg, #800000 0%, #580000 100%);
+            color: white; padding: 15px 20px; display: flex; align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 100;
+        }
+        .nav-btn { color: white; font-size: 1.2rem; margin-right: 15px; cursor: pointer; }
+        .brand-text h2 { font-size: 1.1rem; margin: 0; font-weight: 600; }
+        .brand-text p { font-size: 0.75rem; margin: 0; opacity: 0.8; }
+
+        /* AREA CHAT */
+        #chatContainer {
+            flex: 1; overflow-y: auto; padding: 15px;
+            display: flex; flex-direction: column; gap: 10px;
+            padding-bottom: 80px; /* Ruang untuk input bawah */
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%239C92AC' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+        }
+
+        /* BUBBLE CHAT */
+        .msg {
+            max-width: 75%; padding: 8px 12px; border-radius: 10px;
+            font-size: 0.9rem; position: relative; word-wrap: break-word;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        
+        /* Pesan Orang Lain (Kiri) */
+        .msg-left {
+            align-self: flex-start; background: white; 
+            border-top-left-radius: 0;
+        }
+        .sender-name {
+            font-size: 0.7rem; color: #e65100; font-weight: bold; margin-bottom: 2px; display: block;
+        }
+
+        /* Pesan Saya (Kanan) */
+        .msg-right {
+            align-self: flex-end; background: #dcf8c6; 
+            border-top-right-radius: 0;
+        }
+
+        .msg-time {
+            font-size: 0.65rem; color: #999; text-align: right; margin-top: 3px; display: block;
+        }
+
+        /* INPUT BAR */
+        .input-area {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: #f0f0f0; padding: 10px;
+            display: flex; align-items: center; gap: 10px;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.1); z-index: 999;
+        }
+        .chat-input {
+            flex: 1; padding: 12px; border-radius: 25px; border: none;
+            outline: none; font-size: 0.95rem; background: white;
+        }
+        .btn-send {
+            background: #800000; color: white; border: none;
+            width: 45px; height: 45px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="navbar">
+        <a href="dashboard.html" class="nav-btn"><i class="fas fa-arrow-left"></i></a>
+        <div class="brand-text">
+            <h2>Diskusi Tim</h2>
+            <p>Borsin Tenun</p>
+        </div>
+    </div>
+
+    <div id="chatContainer">
+        <p style="text-align:center; color:#888; font-size:0.8rem; background:rgba(255,255,255,0.8); padding:5px; border-radius:10px; margin:0 auto; width:fit-content;">
+            🔒 Pesan terenkripsi & aman.
+        </p>
+    </div>
+
+    <form class="input-area" id="chatForm">
+        <input type="text" id="msgInput" class="chat-input" placeholder="Ketik pesan..." required autocomplete="off">
+        <button type="submit" class="btn-send"><i class="fas fa-paper-plane"></i></button>
+    </form>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAXM4yJgh9F7ajGQApB-Ux1itQ_3pkik_o",
+            authDomain: "borsin-tenun-app.firebaseapp.com",
+            projectId: "borsin-tenun-app",
+            storageBucket: "borsin-tenun-app.firebasestorage.app",
+            messagingSenderId: "718889934564",
+            appId: "1:718889934564:web:c28a073e261d6783d096f1"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        
+        let currentUser = null;
+        let currentName = "User";
+
+        // 1. Cek Login & Ambil Nama
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                const docSnap = await getDoc(doc(db, "users", user.uid));
+                if (docSnap.exists()) {
+                    currentName = docSnap.data().nama || "User";
+                }
+                initChat();
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+
+        // 2. Fungsi Chat Realtime
+        function initChat() {
+            const q = query(collection(db, "chats"), orderBy("timestamp", "asc"));
+            
+            // Dengar perubahan database (Live)
+            onSnapshot(q, (snapshot) => {
+                const container = document.getElementById('chatContainer');
+                
+                // Bersihkan & isi ulang (atau tambah yang baru saja - tapi ini cara simpel biar urut)
+                // Teknik lebih efisien: Append only new. Tapi untuk simpel, render all ok untuk skala kecil.
+                // Kita pakai trik: Hapus semua dulu biar gampang urutannya.
+                container.innerHTML = '<p style="text-align:center; color:#888; font-size:0.8rem; background:rgba(255,255,255,0.8); padding:5px; border-radius:10px; margin:0 auto; width:fit-content;">🔒 Ruang Diskusi Tim</p>';
+                
+                snapshot.forEach((doc) => {
+                    const msg = doc.data();
+                    const isMe = msg.uid === currentUser.uid;
+                    const time = msg.timestamp ? new Date(msg.timestamp.toDate()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '..';
+                    
+                    const div = document.createElement('div');
+                    div.className = isMe ? 'msg msg-right' : 'msg msg-left';
+                    
+                    div.innerHTML = `
+                        ${!isMe ? `<span class="sender-name">${msg.nama}</span>` : ''}
+                        ${msg.text}
+                        <span class="msg-time">${time}</span>
+                    `;
+                    
+                    container.appendChild(div);
+                });
+
+                // Scroll otomatis ke bawah
+                container.scrollTop = container.scrollHeight;
+            });
+        }
+
+        // 3. Kirim Pesan
+        document.getElementById('chatForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const input = document.getElementById('msgInput');
+            const text = input.value.trim();
+            
+            if (text && currentUser) {
+                input.value = ''; // Kosongkan input dulu biar cepat
+                
+                await addDoc(collection(db, "chats"), {
+                    text: text,
+                    uid: currentUser.uid,
+                    nama: currentName,
+                    timestamp: new Date()
+                });
+            }
+        });
+    </script>
+</body>
+</html>
