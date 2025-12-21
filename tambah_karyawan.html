@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Input/Edit Karyawan</title>
+    <link rel="stylesheet" href="style.css?v=FINAL">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="navbar">
+        <a href="data_karyawan.html" class="nav-btn"><i class="fas fa-arrow-left"></i></a>
+        <div class="brand-text">
+            <h2 id="title-page">Input Karyawan</h2>
+            <p>Data Pegawai</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <form id="f">
+                <div class="form-group">
+                    <label>Foto Profil</label>
+                    <input type="file" id="foto" accept="image/*" class="form-control">
+                    <small id="foto-info" style="color: gray; display: none;">*Kosongkan jika tidak ingin mengubah foto</small>
+                </div>
+                
+                <div class="form-group" style="background:#e8f5e9;padding:10px;border:1px dashed green;">
+                    <label style="color:green">Upload QR Code (Opsional)</label>
+                    <input type="file" id="qris" accept="image/*" class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label>Nama (Gunakan Kode Angka, contoh: 01 - Nama)</label>
+                    <input type="text" id="nama" required class="form-control" placeholder="01 - Nama">
+                </div>
+
+                <div class="form-group">
+                    <label>Gender</label>
+                    <select id="jk" class="form-control">
+                        <option value="Laki-laki">Laki-laki</option>
+                        <option value="Perempuan">Perempuan</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>No HP</label>
+                    <input type="number" id="hp" required class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label>Bank / Wallet</label>
+                    <input type="text" id="bank" placeholder="BRI / DANA" required class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label>No. Rek / BRIVA</label>
+                    <input type="number" id="rek" placeholder="Contoh: 88810..." required class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label>Atas Nama</label>
+                    <input type="text" id="an" required class="form-control">
+                </div>
+
+                <button id="btn" class="btn">SIMPAN</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <a href="dashboard.html" class="nav-item"><i class="fas fa-home"></i><span>Home</span></a>
+        <a href="pesanan.html" class="nav-item"><i class="fas fa-clipboard-list"></i><span>Pesanan</span></a>
+        <a href="data_karyawan.html" class="nav-item active" style="color:#800000;font-weight:bold"><i class="fas fa-users"></i><span>Karyawan</span></a>
+        <a href="slip_gaji.html" class="nav-item"><i class="fas fa-wallet"></i><span>Keuangan</span></a>
+    </div>
+
+    <script type="module">
+        import { db } from "./config.js";
+        import { collection, addDoc, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const editId = urlParams.get('id');
+        let currentData = {};
+
+        // Fungsi Resize Gambar
+        const resize = (f) => new Promise(r => {
+            const rd = new FileReader();
+            rd.readAsDataURL(f);
+            rd.onload = e => {
+                const i = new Image();
+                i.src = e.target.result;
+                i.onload = () => {
+                    const c = document.createElement('canvas'), m = 600, s = m / i.width;
+                    c.width = m;
+                    c.height = i.height * s;
+                    c.getContext('2d').drawImage(i, 0, 0, c.width, c.height);
+                    r(c.toDataURL('image/jpeg', 0.7))
+                }
+            }
+        });
+
+        // 1. Load data lama jika MODE EDIT
+        if (editId) {
+            document.getElementById('title-page').innerText = "Edit Karyawan";
+            document.getElementById('btn').innerText = "PERBARUI";
+            document.getElementById('foto-info').style.display = "block";
+            document.getElementById('foto').removeAttribute('required'); // Foto tidak wajib saat edit
+
+            const loadOldData = async () => {
+                const snap = await getDoc(doc(db, "karyawan", editId));
+                if (snap.exists()) {
+                    currentData = snap.data();
+                    document.getElementById('nama').value = currentData.nama;
+                    document.getElementById('jk').value = currentData.jk;
+                    document.getElementById('hp').value = currentData.hp;
+                    document.getElementById('bank').value = currentData.bank;
+                    document.getElementById('rek').value = currentData.rekening;
+                    document.getElementById('an').value = currentData.nama_rekening;
+                }
+            };
+            loadOldData();
+        } else {
+            // Mode Tambah Baru, Foto Wajib
+            document.getElementById('foto').setAttribute('required', 'true');
+        }
+
+        // 2. Proses Simpan / Update
+        document.getElementById('f').onsubmit = async e => {
+            e.preventDefault();
+            const btn = document.getElementById('btn');
+            btn.innerText = "Memproses...";
+            btn.disabled = true;
+
+            try {
+                const d = {
+                    nama: document.getElementById('nama').value,
+                    jk: document.getElementById('jk').value,
+                    hp: document.getElementById('hp').value,
+                    bank: document.getElementById('bank').value,
+                    rekening: document.getElementById('rek').value,
+                    nama_rekening: document.getElementById('an').value,
+                    timestamp: new Date()
+                };
+
+                // Proses Foto Profil
+                const f = document.getElementById('foto');
+                if (f.files[0]) {
+                    d.foto = await resize(f.files[0]);
+                } else if (editId) {
+                    d.foto = currentData.foto; // Gunakan foto lama jika tidak upload baru
+                }
+
+                // Proses Foto QRIS
+                const q = document.getElementById('qris');
+                if (q.files[0]) {
+                    d.foto_qris = await resize(q.files[0]);
+                } else if (editId) {
+                    d.foto_qris = currentData.foto_qris || ""; // Gunakan QRIS lama
+                }
+
+                if (editId) {
+                    await updateDoc(doc(db, "karyawan", editId), d);
+                } else {
+                    await addDoc(collection(db, "karyawan"), d);
+                }
+
+                alert("Data Berhasil Disimpan!");
+                window.location.href = "data_karyawan.html";
+            } catch (er) {
+                alert(er.message);
+                btn.innerText = "SIMPAN";
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

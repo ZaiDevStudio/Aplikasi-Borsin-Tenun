@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Hitung & Edit Gaji</title>
+    <link rel="stylesheet" href="style.css?v=FINAL">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .input-group{position:relative;display:flex;align-items:center;margin-bottom:10px}
+        .input-group span{position:absolute;left:15px;color:#555;font-weight:bold;z-index:10;font-size:0.8rem}
+        .input-group input{padding-left:35px;width:100%}
+        /* Tambahan style untuk navigasi bawah agar tidak tertutup */
+        body { padding-bottom: 80px; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <a href="rekapan_gaji.html" class="nav-btn"><i class="fas fa-arrow-left"></i></a>
+        <h3 id="title-page">Hitung Gaji</h3>
+    </div>
+
+    <div class="container">
+        <form id="f">
+            <div class="card">
+                <h4>Data Produksi</h4>
+                <label>Karyawan</label>
+                <select id="kar" class="form-control" required><option value="">-- Pilih --</option></select>
+                
+                <label>Ulos</label>
+                <select id="ulos" class="form-control" required><option value="">-- Pilih --</option></select>
+                
+                <label>Upah</label>
+                <div class="input-group"><span>Rp</span><input type="number" id="upah" readonly class="form-control" style="background:#eee"></div>
+                
+                <label>Jumlah (Lembar)</label>
+                <input type="number" id="jml" class="form-control" required placeholder="0">
+                
+                <label>Biaya Pakan (Per Lembar)</label>
+                <div class="input-group"><span>Rp</span><input type="number" id="pakan" class="form-control" placeholder="0"></div>
+            </div>
+
+            <div class="card">
+                <h4>Potongan (Rp)</h4>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                    <div class="input-group"><span>Rp</span><input type="number" id="p1" placeholder="Air" class="form-control"></div>
+                    <div class="input-group"><span>Rp</span><input type="number" id="p2" placeholder="Wifi" class="form-control"></div>
+                    <div class="input-group"><span>Rp</span><input type="number" id="p3" placeholder="Stell" class="form-control"></div>
+                    <div class="input-group"><span>Rp</span><input type="number" id="p4" placeholder="Lain" class="form-control"></div>
+                </div>
+            </div>
+
+            <div class="card" style="background:#e3f2fd;text-align:center">
+                <h2 id="tot" style="color:#0d47a1" data-val="0">Rp 0</h2>
+                <button type="button" id="cal" class="btn" style="background:orange">HITUNG TOTAL</button>
+            </div>
+
+            <button id="sv" class="btn" style="margin-top:15px; margin-bottom: 20px;">SIMPAN DATA</button>
+        </form>
+    </div>
+
+    <div class="bottom-nav">
+        <a href="dashboard.html" class="nav-item"><i class="fas fa-home"></i><span>Home</span></a>
+        <a href="pesanan.html" class="nav-item"><i class="fas fa-clipboard-list"></i><span>Pesanan</span></a>
+        <a href="data_karyawan.html" class="nav-item"><i class="fas fa-users"></i><span>Karyawan</span></a>
+        <a href="slip_gaji.html" class="nav-item active"><i class="fas fa-wallet"></i><span>Keuangan</span></a>
+    </div>
+
+    <script type="module">
+        import { auth, db } from "./config.js";
+        import { collection, getDocs, addDoc, updateDoc, doc, getDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+
+        let um = {}, km = {};
+        const urlParams = new URLSearchParams(window.location.search);
+        const editId = urlParams.get('id'); 
+        
+        const num = v => Number(v) || 0;
+        const fmt = n => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
+
+        onAuthStateChanged(auth, u => {
+            if (!u) window.location.href = 'login.html';
+            else initPage();
+        });
+
+        async function initPage() {
+            const qU = query(collection(db, "ulos"), orderBy("nama"));
+            const qK = query(collection(db, "karyawan"), orderBy("nama"));
+            const [snapU, snapK] = await Promise.all([getDocs(qU), getDocs(qK)]);
+            
+            const su = document.getElementById('ulos'), sk = document.getElementById('kar');
+            
+            snapU.forEach(d => {
+                const dt = d.data();
+                su.innerHTML += `<option value="${dt.nama}">${dt.nama}</option>`;
+                um[dt.nama] = dt.upah || 0;
+            });
+            
+            snapK.forEach(d => {
+                const dt = d.data();
+                sk.innerHTML += `<option value="${dt.nama}">${dt.nama}</option>`;
+                km[dt.nama] = dt;
+            });
+
+            if (editId) {
+                document.getElementById('title-page').innerText = "Edit Gaji";
+                document.getElementById('sv').innerText = "PERBARUI DATA";
+                const docRef = doc(db, "gaji", editId);
+                const snap = await getDoc(docRef);
+                
+                if (snap.exists()) {
+                    const old = snap.data();
+                    document.getElementById('kar').value = old.nama_karyawan;
+                    document.getElementById('ulos').value = old.nama_ulos;
+                    document.getElementById('upah').value = um[old.nama_ulos] || 0;
+                    document.getElementById('jml').value = old.jumlah;
+                    document.getElementById('pakan').value = old.pakan / old.jumlah;
+                    document.getElementById('p1').value = old.pot_air;
+                    document.getElementById('p2').value = old.pot_wifi;
+                    document.getElementById('p3').value = old.pot_stell;
+                    document.getElementById('p4').value = old.pot_lain;
+                    calculateGaji();
+                }
+            }
+        }
+
+        function calculateGaji() {
+            const upahTotal = num(document.getElementById('upah').value) * num(document.getElementById('jml').value);
+            const pakanTotal = num(document.getElementById('pakan').value) * num(document.getElementById('jml').value);
+            const potongan = num(document.getElementById('p1').value) + num(document.getElementById('p2').value) + num(document.getElementById('p3').value) + num(document.getElementById('p4').value);
+            const hasilBersih = upahTotal - pakanTotal - potongan;
+            document.getElementById('tot').innerText = fmt(hasilBersih);
+            document.getElementById('tot').dataset.val = hasilBersih;
+        }
+
+        document.getElementById('ulos').onchange = function() {
+            document.getElementById('upah').value = um[this.value] || 0;
+            calculateGaji();
+        };
+
+        document.getElementById('cal').onclick = calculateGaji;
+
+        document.getElementById('f').onsubmit = async e => {
+            e.preventDefault();
+            calculateGaji();
+            const btn = document.getElementById('sv');
+            btn.innerText = "Memproses...";
+            btn.disabled = true;
+
+            try {
+                const kn = document.getElementById('kar').value;
+                const d = {
+                    nama_karyawan: kn,
+                    nama_ulos: document.getElementById('ulos').value,
+                    jumlah: num(document.getElementById('jml').value),
+                    pakan: num(document.getElementById('pakan').value) * num(document.getElementById('jml').value),
+                    pot_air: num(document.getElementById('p1').value),
+                    pot_wifi: num(document.getElementById('p2').value),
+                    pot_stell: num(document.getElementById('p3').value),
+                    pot_lain: num(document.getElementById('p4').value),
+                    gajiBersih: num(document.getElementById('tot').dataset.val),
+                    timestamp: new Date()
+                };
+
+                if (km[kn]) {
+                    d.rekening = km[kn].rekening || "";
+                    d.bank = km[kn].bank || "";
+                    d.nama_rekening = km[kn].nama_rekening || "";
+                    d.foto_qris = km[kn].foto_qris || "";
+                }
+
+                if (editId) {
+                    await updateDoc(doc(db, "gaji", editId), d);
+                } else {
+                    await addDoc(collection(db, "gaji"), d);
+                }
+
+                alert("Data Berhasil Disimpan!");
+                window.location.href = "rekapan_gaji.html";
+            } catch (er) {
+                alert("Gagal: " + er.message);
+                btn.innerText = "SIMPAN DATA";
+                btn.disabled = false;
+            }
+        };
+    </script>
+</body>
+</html>
