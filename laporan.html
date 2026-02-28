@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Laporan Gaji Diterima - Borsin Tenun</title>
+    <link rel="stylesheet" href="style.css?v=FINAL">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+        body { background-color: #f1f2f6; padding-bottom: 100px; font-family: 'Poppins', sans-serif; margin: 0; }
+        
+        /* Navbar & Header */
+        .navbar { background: #800000; color: white; padding: 20px; text-align: center; border-bottom-left-radius: 25px; border-bottom-right-radius: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .summary-card { background: linear-gradient(135deg, #800000, #a52a2a); color: white; margin: 15px; padding: 20px; border-radius: 20px; text-align: center; box-shadow: 0 10px 20px rgba(128,0,0,0.2); }
+        .summary-card h2 { margin: 5px 0; font-size: 1.8rem; }
+
+        .container { padding: 10px; }
+        
+        /* Card Laporan */
+        .report-item { background: white; border-radius: 15px; padding: 15px; margin-bottom: 15px; border: 1px solid #ddd; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .report-header { border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: flex-start; }
+        .name { font-weight: 700; color: #333; text-transform: uppercase; font-size: 0.9rem; }
+        .date-label { font-size: 0.7rem; color: #888; font-weight: normal; margin-top: 2px; display: block; }
+        
+        /* Baris Detail */
+        .detail-row { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 5px; color: #555; }
+        .potongan-text { color: #d63031; font-weight: 600; }
+        .total-row { border-top: 1px dashed #ccc; margin-top: 10px; padding-top: 10px; font-weight: 700; color: #27ae60; font-size: 1rem; display: flex; justify-content: space-between; }
+        
+        /* Box Ringkasan di Bawah */
+        .rekap-box { background: #fff; margin: 15px; padding: 18px; border-radius: 15px; border: 2px solid #800000; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .rekap-title { color: #800000; font-weight: 700; margin-bottom: 10px; border-bottom: 2px solid #eee; padding-bottom: 5px; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; }
+        .rekap-item { display: flex; justify-content: space-between; font-size: 0.8rem; padding: 5px 0; border-bottom: 1px solid #f2f2f2; }
+        
+        /* Navigasi Bawah */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #eee; height: 70px; align-items: center; z-index: 1000; }
+        .nav-item { text-decoration: none; color: #b2bec3; text-align: center; font-size: 0.7rem; flex: 1; }
+        .nav-item.active { color: #800000; font-weight: 700; }
+        .nav-item i { font-size: 1.4rem; margin-bottom: 4px; display: block; }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <h3 style="margin:0; font-size:1.1rem; letter-spacing:1px;">LAPORAN GAJI DITERIMA</h3>
+    </div>
+
+    <div class="summary-card">
+        <p style="margin:0; font-size:0.85rem; opacity:0.9;">Total Gaji Bersih Dibayarkan</p>
+        <h2 id="grand-total">Rp 0</h2>
+    </div>
+
+    <div class="container" id="laporan-list">
+        <p style="text-align:center; color:#999; margin-top:50px;">Memuat data laporan...</p>
+    </div>
+
+    <div id="ringkasan-container"></div>
+
+    <div class="bottom-nav">
+        <a href="dashboard.html" class="nav-item"><i class="fas fa-home"></i><span>Home</span></a>
+        <a href="hitung_gaji.html" class="nav-item"><i class="fas fa-calculator"></i><span>Hitung</span></a>
+        <a href="rekapan_gaji.html" class="nav-item"><i class="fas fa-wallet"></i><span>Rekapan</span></a>
+        <a href="laporan.html" class="nav-item active"><i class="fas fa-file-alt"></i><span>Laporan</span></a>
+    </div>
+
+    <script type="module">
+        import { db } from "./config.js";
+        import { collection, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+        function loadLaporan() {
+            // Ambil data yang sudah "Diterima"
+            const q = query(collection(db, "gaji"), where("status", "==", "Diterima"));
+
+            onSnapshot(q, (snapshot) => {
+                const list = document.getElementById("laporan-list");
+                const ringkasanDiv = document.getElementById("ringkasan-container");
+                
+                let rawData = [];
+                let totalGaji = 0;
+                
+                // Variabel Rekapitulasi Ringkasan
+                let daftarPenenun = new Set();
+                let rekapUlos = {};
+                let rekapPotongan = { "Pakan": 0, "Air": 0, "Wifi": 0, "Stell": 0 };
+
+                if (snapshot.empty) {
+                    list.innerHTML = "<p style='text-align:center; color:#999; margin-top:50px;'>Belum ada laporan yang divalidasi.</p>";
+                    document.getElementById("grand-total").innerText = "Rp 0";
+                    ringkasanDiv.innerHTML = "";
+                    return;
+                }
+
+                snapshot.forEach(doc => rawData.push(doc.data()));
+
+                // URUTKAN BERDASARKAN NAMA (A-Z) - Manual agar tidak error Index
+                rawData.sort((a, b) => a.nama_karyawan.localeCompare(b.nama_karyawan));
+
+                let html = "";
+                rawData.forEach((d) => {
+                    const tgl = d.timestamp ? d.timestamp.toDate().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : '-';
+                    const bersih = Number(d.gajiBersih) || 0;
+                    const jml = Number(d.jumlah) || 0;
+                    
+                    totalGaji += bersih;
+                    daftarPenenun.add(d.nama_karyawan);
+
+                    // Proses Rekap Produksi & Potongan
+                    rekapUlos[d.nama_ulos] = (rekapUlos[d.nama_ulos] || 0) + jml;
+                    rekapPotongan["Pakan"] += Number(d.pakan) || 0;
+                    rekapPotongan["Air"] += Number(d.pot_air) || 0;
+                    rekapPotongan["Wifi"] += Number(d.pot_wifi) || 0;
+                    rekapPotongan["Stell"] += Number(d.pot_stell) || 0;
+
+                    let rincianPotHtml = "";
+                    if (d.pakan > 0) rincianPotHtml += `<div class="detail-row"><span>Pot. Pakan:</span><span class="potongan-text">- Rp ${Number(d.pakan).toLocaleString('id-ID')}</span></div>`;
+                    if (d.pot_air > 0) rincianPotHtml += `<div class="detail-row"><span>Pot. Air:</span><span class="potongan-text">- Rp ${Number(d.pot_air).toLocaleString('id-ID')}</span></div>`;
+                    if (d.pot_wifi > 0) rincianPotHtml += `<div class="detail-row"><span>Pot. Wifi:</span><span class="potongan-text">- Rp ${Number(d.pot_wifi).toLocaleString('id-ID')}</span></div>`;
+                    if (d.pot_stell > 0) rincianPotHtml += `<div class="detail-row"><span>Pot. Stell:</span><span class="potongan-text">- Rp ${Number(d.pot_stell).toLocaleString('id-ID')}</span></div>`;
+
+                    // Potongan Lain-lain (Keterangan + Nilai)
+                    if (d.daftar_potongan) {
+                        d.daftar_potongan.forEach(p => {
+                            rincianPotHtml += `<div class="detail-row"><span>${p.ket}:</span><span class="potongan-text">- Rp ${Number(p.val).toLocaleString('id-ID')}</span></div>`;
+                            rekapPotongan[p.ket] = (rekapPotongan[p.ket] || 0) + Number(p.val);
+                        });
+                    }
+
+                    html += `
+                        <div class="report-item">
+                            <div class="report-header">
+                                <div>
+                                    <span class="name">${d.nama_karyawan}</span>
+                                    <span class="date-label">Divalidasi: ${tgl}</span>
+                                </div>
+                            </div>
+                            <div class="detail-row">
+                                <span>Produksi: <strong>${d.nama_ulos}</strong></span>
+                                <span>${jml} Lbr</span>
+                            </div>
+                            <div style="border-top:1px solid #f9f9f9; margin:5px 0; padding-top:5px;"></div>
+                            ${rincianPotHtml}
+                            <div class="total-row">
+                                <span>Gaji Bersih:</span>
+                                <span>Rp ${bersih.toLocaleString('id-ID')}</span>
+                            </div>
+                        </div>`;
+                });
+
+                list.innerHTML = html;
+                document.getElementById("grand-total").innerText = "Rp " + totalGaji.toLocaleString('id-ID');
+
+                // MEMBUAT TAMPILAN RINGKASAN REKAPITULASI
+                let ulosHtml = "";
+                for (let jenis in rekapUlos) { ulosHtml += `<div class="rekap-item"><span>${jenis}</span><span>${rekapUlos[jenis]} Lbr</span></div>`; }
+
+                let totalPotHtml = "";
+                for (let ket in rekapPotongan) { 
+                    if(rekapPotongan[ket] > 0) totalPotHtml += `<div class="rekap-item"><span>Total ${ket}</span><span style="color:#d32f2f">- Rp ${rekapPotongan[ket].toLocaleString('id-ID')}</span></div>`; 
+                }
+
+                ringkasanDiv.innerHTML = `
+                    <div class="rekap-box">
+                        <div class="rekap-title"><i class="fas fa-users"></i> DATA PENENUN: ${daftarPenenun.size} ORANG</div>
+                        <div style="margin-top:15px" class="rekap-title"><i class="fas fa-scroll"></i> RINGKASAN PRODUKSI</div>
+                        ${ulosHtml}
+                        <div style="margin-top:15px" class="rekap-title"><i class="fas fa-cut"></i> RINGKASAN POTONGAN</div>
+                        ${totalPotHtml}
+                    </div>`;
+            }, (error) => {
+                list.innerHTML = `<p style='color:red; text-align:center;'>Gagal memuat: ${error.message}</p>`;
+            });
+        }
+        loadLaporan();
+    </script>
+</body>
+</html>

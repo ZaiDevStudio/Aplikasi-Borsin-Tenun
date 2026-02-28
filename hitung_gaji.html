@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Hitung & Edit Gaji</title>
+    <link rel="stylesheet" href="style.css?v=FINAL">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .navbar { background: #800000; color: white; padding: 15px; text-align: center; display: flex; align-items: center; justify-content: space-between; }
+        .nav-btn { color: white; text-decoration: none; font-size: 1.2rem; }
+        .input-group{position:relative;display:flex;align-items:center;margin-bottom:10px}
+        .input-group span{position:absolute;left:15px;color:#555;font-weight:bold;z-index:10;font-size:0.8rem}
+        .input-group input{padding-left:35px;width:100%}
+        body { padding-bottom: 80px; font-family: 'Poppins', sans-serif; background: #f1f2f6; margin: 0; }
+        .container { padding: 15px; }
+        .card { background: white; padding: 15px; border-radius: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .auto-fill { background:#eee; cursor: not-allowed; }
+        .label-auto { font-size: 0.75rem; color: #d32f2f; font-weight: bold; margin-bottom: 2px; display: block; }
+        .form-control { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
+        .btn-tambah { background: #0d47a1; color: white; border: none; padding: 10px; border-radius: 12px; width: 100%; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        .btn-del { background: #d32f2f; color: white; border: none; padding: 10px; border-radius: 8px; }
+        .btn-utama { background: #800000; color: white; border: none; width: 100%; padding: 15px; border-radius: 12px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <a href="rekapan_gaji.html" class="nav-btn"><i class="fas fa-arrow-left"></i></a>
+        <h3 id="title-page" style="margin:0; flex-grow:1; text-align:center;">Hitung Gaji</h3>
+        <div style="width:30px"></div> </div>
+
+    <div class="container">
+        <form id="f">
+            <div class="card">
+                <h4>Data Produksi</h4>
+                <label>Karyawan</label>
+                <select id="kar" class="form-control" required><option value="">-- Pilih --</option></select>
+                
+                <label>Pilih Ulos</label>
+                <select id="ulos" class="form-control" required><option value="">-- Pilih --</option></select>
+                
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px; margin-top:10px">
+                    <div>
+                        <span class="label-auto">Upah/Pcs</span>
+                        <div class="input-group"><span>Rp</span><input type="number" id="upah" readonly class="form-control auto-fill"></div>
+                    </div>
+                    <div>
+                        <span class="label-auto">Pot. Pakan/Pcs</span>
+                        <div class="input-group"><span>Rp</span><input type="number" id="pakan" readonly class="form-control auto-fill"></div>
+                    </div>
+                </div>
+                
+                <label>Jumlah (Lembar)</label>
+                <input type="number" id="jml" class="form-control" required placeholder="0" oninput="calculateGaji()">
+            </div>
+
+            <div class="card">
+                <h4>Potongan Wajib</h4>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                    <div class="input-group"><span>Rp</span><input type="number" id="p_air" placeholder="Air" class="form-control" oninput="calculateGaji()"></div>
+                    <div class="input-group"><span>Rp</span><input type="number" id="p_wifi" placeholder="Wifi" class="form-control" oninput="calculateGaji()"></div>
+                    <div class="input-group"><span>Rp</span><input type="number" id="p_stell" placeholder="Stell" class="form-control" oninput="calculateGaji()"></div>
+                </div>
+
+                <hr style="border: 0.5px solid #eee; margin: 15px 0;">
+                
+                <h4>Potongan Lainnya</h4>
+                <div id="pot-list"></div>
+                <button type="button" class="btn-tambah" onclick="addPotRow('', '')">
+                    <i class="fas fa-plus-circle"></i> TAMBAH POTONGAN
+                </button>
+            </div>
+
+            <div class="card" style="background:#e3f2fd;text-align:center; border: 2px solid #0d47a1">
+                <p style="font-size:0.8rem; margin-bottom:5px">Total Gaji Diterima:</p>
+                <h2 id="tot" style="color:#0d47a1" data-val="0">Rp 0</h2>
+            </div>
+
+            <button type="submit" id="sv" class="btn-utama" style="margin-top:15px;">SIMPAN DATA GAJI</button>
+        </form>
+    </div>
+
+    <script type="module">
+        import { auth, db } from "./config.js";
+        import { collection, getDocs, addDoc, updateDoc, doc, getDoc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+
+        let ulosMap = {}, km = {};
+        const urlParams = new URLSearchParams(window.location.search);
+        const editId = urlParams.get('id'); // Menyesuaikan dengan parameter dari rekapan
+        
+        const num = v => Number(v) || 0;
+        const fmt = n => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
+
+        onAuthStateChanged(auth, u => {
+            if (!u) window.location.href = 'login.html';
+            else initPage();
+        });
+
+        window.addPotRow = function(ket = '', val = '') {
+            const container = document.getElementById('pot-list');
+            const div = document.createElement('div');
+            div.className = 'pot-item';
+            div.style.display = "flex";
+            div.style.gap = "5px";
+            div.style.marginBottom = "8px";
+            div.innerHTML = `
+                <input type="text" placeholder="Ket" class="form-control p-ket" value="${ket}" style="flex:2; margin-bottom:0">
+                <div class="input-group" style="flex:2; margin-bottom:0">
+                    <span>Rp</span>
+                    <input type="number" placeholder="Rp" class="form-control p-val" value="${val}" oninput="calculateGaji()">
+                </div>
+                <button type="button" class="btn-del" onclick="this.parentElement.remove(); calculateGaji();"><i class="fas fa-trash"></i></button>
+            `;
+            container.appendChild(div);
+        }
+
+        async function initPage() {
+            // Muat Data Ulos & Karyawan dulu
+            const [snapU, snapK] = await Promise.all([
+                getDocs(query(collection(db, "ulos"), orderBy("nama"))),
+                getDocs(query(collection(db, "karyawan"), orderBy("nama")))
+            ]);
+            
+            snapU.forEach(d => {
+                const dt = d.data();
+                document.getElementById('ulos').innerHTML += `<option value="${dt.nama}">${dt.nama}</option>`;
+                ulosMap[dt.nama] = { upah: dt.upah || 0, pakan: dt.potongan_pakan_default || 0 };
+            });
+            
+            snapK.forEach(d => {
+                const dt = d.data();
+                document.getElementById('kar').innerHTML += `<option value="${dt.nama}">${dt.nama}</option>`;
+                km[dt.nama] = dt;
+            });
+
+            // BARU MUAT DATA LAMA SETELAH DROPDOWN TERISI
+            if (editId) {
+                document.getElementById('title-page').innerText = "Edit Gaji";
+                document.getElementById('sv').innerText = "PERBARUI DATA";
+                const snap = await getDoc(doc(db, "gaji", editId));
+                
+                if (snap.exists()) {
+                    const old = snap.data();
+                    document.getElementById('kar').value = old.nama_karyawan;
+                    document.getElementById('ulos').value = old.nama_ulos;
+                    document.getElementById('upah').value = old.upah_satuan;
+                    document.getElementById('pakan').value = old.pakan_satuan;
+                    document.getElementById('jml').value = old.jumlah;
+                    document.getElementById('p_air').value = old.pot_air;
+                    document.getElementById('p_wifi').value = old.pot_wifi;
+                    document.getElementById('p_stell').value = old.pot_stell;
+                    
+                    if(old.daftar_potongan) {
+                        old.daftar_potongan.forEach(p => addPotRow(p.ket, p.val));
+                    }
+                    calculateGaji();
+                }
+            }
+        }
+
+        window.calculateGaji = function() {
+            const upahPcs = num(document.getElementById('upah').value);
+            const pakanPcs = num(document.getElementById('pakan').value);
+            const jml = num(document.getElementById('jml').value);
+            const pWajib = num(document.getElementById('p_air').value) + num(document.getElementById('p_wifi').value) + num(document.getElementById('p_stell').value);
+            
+            let pLain = 0;
+            document.querySelectorAll('.p-val').forEach(input => { pLain += num(input.value); });
+
+            const hasilBersih = (upahPcs * jml) - (pakanPcs * jml) - pWajib - pLain;
+            document.getElementById('tot').innerText = fmt(hasilBersih);
+            document.getElementById('tot').dataset.val = hasilBersih;
+        };
+
+        document.getElementById('ulos').onchange = function() {
+            const data = ulosMap[this.value];
+            if(data) {
+                document.getElementById('upah').value = data.upah;
+                document.getElementById('pakan').value = data.pakan;
+            }
+            calculateGaji();
+        };
+
+        document.getElementById('f').onsubmit = async e => {
+            e.preventDefault();
+            const btn = document.getElementById('sv');
+            btn.innerText = "Menyimpan...";
+            btn.disabled = true;
+
+            try {
+                const kn = document.getElementById('kar').value;
+                let daftarPotongan = [];
+                document.querySelectorAll('.pot-item').forEach(item => {
+                    const ket = item.querySelector('.p-ket').value;
+                    const val = num(item.querySelector('.p-val').value);
+                    if(val > 0) daftarPotongan.push({ ket, val });
+                });
+
+                const d = {
+                    nama_karyawan: kn,
+                    nama_ulos: document.getElementById('ulos').value,
+                    upah_satuan: num(document.getElementById('upah').value),
+                    pakan_satuan: num(document.getElementById('pakan').value),
+                    jumlah: num(document.getElementById('jml').value),
+                    pakan: num(document.getElementById('pakan').value) * num(document.getElementById('jml').value),
+                    pot_air: num(document.getElementById('p_air').value),
+                    pot_wifi: num(document.getElementById('p_wifi').value),
+                    pot_stell: num(document.getElementById('p_stell').value),
+                    daftar_potongan: daftarPotongan,
+                    gajiBersih: num(document.getElementById('tot').dataset.val),
+                    timestamp: serverTimestamp()
+                };
+
+                if (editId) {
+                    await updateDoc(doc(db, "gaji", editId), d);
+                } else {
+                    d.status = "Pending";
+                    await addDoc(collection(db, "gaji"), d);
+                }
+
+                alert("Berhasil!");
+                window.location.href = "rekapan_gaji.html";
+            } catch (er) {
+                alert("Gagal: " + er.message);
+                btn.innerText = "SIMPAN";
+                btn.disabled = false;
+            }
+        };
+    </script>
+</body>
+</html>
