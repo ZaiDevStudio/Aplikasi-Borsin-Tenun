@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slip Gaji - Borsin Tenun</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+        * { box-sizing: border-box; font-family: 'Poppins', sans-serif; margin: 0; padding: 0; }
+        body { background-color: #F5F7FA; color: #333; padding-bottom: 100px; }
+
+        /* HEADER */
+        .navbar {
+            background: linear-gradient(135deg, #800000 0%, #580000 100%);
+            color: white; padding: 20px 20px 50px; display: flex; align-items: center;
+            border-bottom-left-radius: 30px; border-bottom-right-radius: 30px;
+            box-shadow: 0 5px 15px rgba(128,0,0,0.2); position: relative; z-index: 10;
+        }
+        .nav-btn { color: white; font-size: 1.2rem; margin-right: 15px; cursor: pointer; text-decoration: none; }
+        .brand-text h2 { font-size: 1.2rem; margin: 0; font-weight: 700; } 
+        .brand-text p { font-size: 0.8rem; opacity: 0.8; margin: 0; }
+
+        /* FILTER SECTION */
+        .filter-container {
+            margin: -35px 15px 20px; padding: 15px; background: white;
+            border-radius: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            position: relative; z-index: 30;
+        }
+        .search-box { position: relative; margin-bottom: 12px; }
+        .search-box i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #888; }
+        .search-box input { 
+            width: 100%; padding: 12px 12px 12px 40px; border: 1px solid #eee; 
+            border-radius: 12px; font-size: 0.9rem; background: #f9f9f9;
+        }
+        .date-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .date-input { position: relative; }
+        .date-input label { font-size: 0.65rem; font-weight: bold; color: #800000; margin-left: 5px; display: block; }
+        .date-input input { 
+            width: 100%; padding: 10px; border: 1px solid #eee; 
+            border-radius: 10px; font-size: 0.8rem; background: #f9f9f9; color: #555;
+        }
+
+        /* CONTAINER DATA */
+        .container { padding: 10px; position: relative; z-index: 20; }
+        
+        /* SLIP CARD */
+        .slip-card {
+            background: white; width: 100%; border-radius: 15px;
+            margin-bottom: 20px; overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        .slip-inner { padding: 20px; border: 2px dashed #800000; margin: 10px; border-radius: 10px; background: #fffcf5; }
+
+        /* NAVIGASI */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 70px;
+            background: #ffffff; display: flex; justify-content: space-around; align-items: center;
+            border-top: 1px solid #ddd; z-index: 999; box-shadow: 0 -5px 15px rgba(0,0,0,0.05);
+        }
+        .nav-item { text-decoration: none; color: #999; text-align: center; font-size: 0.7rem; display: flex; flex-direction: column; align-items: center; }
+        .nav-item.active { color: #800000; font-weight: bold; } .nav-item i { font-size: 1.4rem; margin-bottom: 4px; }
+
+        @media print { .no-print, .navbar, .bottom-nav, .filter-container { display: none !important; } .slip-card { box-shadow: none; border: 1px solid #000; } }
+        #imgModal { display:none; position:fixed; z-index:10002; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.9); justify-content:center; align-items:center; }
+    </style>
+</head>
+<body id="page-slip-gaji">
+    
+    <div class="navbar no-print">
+        <a href="dashboard.html" class="nav-btn"><i class="fas fa-arrow-left"></i></a>
+        <div class="brand-text"><h2>Slip Gaji</h2><p>Arsip Pembayaran</p></div>
+    </div>
+
+    <div class="filter-container no-print">
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="cariNama" placeholder="Cari nama penenun..." onkeyup="filterSemua()">
+        </div>
+        <div class="date-grid">
+            <div class="date-input">
+                <label>Dari Tanggal</label>
+                <input type="date" id="tglAwal" onchange="filterSemua()">
+            </div>
+            <div class="date-input">
+                <label>Sampai Tanggal</label>
+                <input type="date" id="tglAkhir" onchange="filterSemua()">
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="dataContainer">
+            <div style="text-align:center; padding:40px; color:#888;">
+                <i class="fas fa-spinner fa-spin" style="font-size:2rem; color:#800000;"></i>
+                <p>Memuat data...</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="imgModal" onclick="this.style.display='none'">
+        <img id="imgModalContent" style="max-width:95%; max-height:95%; border:2px solid white; border-radius:5px;">
+    </div>
+
+    <div class="bottom-nav no-print">
+        <a href="dashboard.html" class="nav-item"><i class="fas fa-home"></i><span>Home</span></a>
+        <a href="pesanan.html" class="nav-item"><i class="fas fa-clipboard-list"></i><span>Pesanan</span></a>
+        <a href="data_karyawan.html" class="nav-item"><i class="fas fa-users"></i><span>Karyawan</span></a>
+        <a href="slip_gaji.html" class="nav-item active"><i class="fas fa-wallet"></i><span>Keuangan</span></a>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, deleteDoc, doc, query, orderBy, getDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyAXM4yJgh9F7ajGQApB-Ux1itQ_3pkik_o", authDomain: "borsin-tenun-app.firebaseapp.com", projectId: "borsin-tenun-app", storageBucket: "borsin-tenun-app.firebasestorage.app", messagingSenderId: "718889934564", appId: "1:718889934564:web:c28a073e261d6783d096f1" };
+        const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app);
+        const fmt = n => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
+
+        let masterData = []; // Tempat simpan semua data agar filter cepat
+        let isAdmin = false;
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                try { 
+                    const d = await getDoc(doc(db, "users", user.uid)); 
+                    isAdmin = d.exists() && d.data().role === 'admin';
+                    loadData(); 
+                } catch (e) { loadData(); }
+            } else window.location.href = 'login.html';
+        });
+
+        async function loadData() {
+            const div = document.getElementById('dataContainer');
+            try {
+                const q = query(collection(db, "gaji"), orderBy("timestamp", "desc"));
+                const snap = await getDocs(q);
+                masterData = [];
+                
+                if (snap.empty) { div.innerHTML = '<p style="text-align:center; margin-top:50px;">Belum ada data.</p>'; return; }
+                
+                snap.forEach(doc => {
+                    masterData.push({ id: doc.id, ...doc.data() });
+                });
+                
+                renderCards(masterData);
+            } catch (e) { div.innerHTML = `<p style="color:red;">Error: ${e.message}</p>`; }
+        }
+
+        window.filterSemua = () => {
+            const nama = document.getElementById('cariNama').value.toLowerCase();
+            const awal = document.getElementById('tglAwal').value;
+            const akhir = document.getElementById('tglAkhir').value;
+
+            const filtered = masterData.filter(d => {
+                const matchNama = (d.nama_karyawan || "").toLowerCase().includes(nama);
+                
+                let matchTgl = true;
+                if(awal || akhir) {
+                    const tglData = d.timestamp ? d.timestamp.toDate() : null;
+                    if(!tglData) return false;
+                    
+                    const dAwal = awal ? new Date(awal) : null;
+                    const dAkhir = akhir ? new Date(akhir) : null;
+                    if(dAkhir) dAkhir.setHours(23, 59, 59);
+
+                    if(dAwal && tglData < dAwal) matchTgl = false;
+                    if(dAkhir && tglData > dAkhir) matchTgl = false;
+                }
+                return matchNama && matchTgl;
+            });
+            renderCards(filtered);
+        };
+
+        function renderCards(data) {
+            const div = document.getElementById('dataContainer');
+            div.innerHTML = '';
+            if (data.length === 0) { div.innerHTML = '<p style="text-align:center; margin-top:50px; color:#888;">Data tidak ditemukan.</p>'; return; }
+
+            data.forEach(d => {
+                const tgl = d.timestamp ? new Date(d.timestamp.toDate()).toLocaleDateString('id-ID') : '-';
+                const anInfo = d.nama_rekening ? `<br><span style="font-size:0.8rem; color:#555;">(A.n. ${d.nama_rekening})</span>` : '';
+                
+                let qrDisplay = '';
+                if (d.foto_qris) {
+                    qrDisplay = `<img src="${d.foto_qris}" style="width:120px; border:1px solid #ddd; padding:5px; margin:5px 0; cursor:pointer; background:white;" onclick="viewImage('${d.foto_qris}')"><br><small style="color:green; font-weight:bold;">SCAN UNTUK BAYAR</small>`;
+                } else if (d.rekening) {
+                    const qrData = new QRious({ value: d.rekening, size: 150, background: 'white', foreground: 'black' }).toDataURL();
+                    qrDisplay = `<img src="${qrData}" style="width:80px; height:80px; border:1px solid #ddd; padding:5px; margin:10px 0; background:white;">`;
+                }
+
+                const rek = d.rekening ? `<div style="margin-top:15px; padding-top:10px; border-top:1px dashed #ccc; text-align:center;"><p style="font-size:0.7rem; color:#888; margin:0;">KODE BAYAR / VA:</p><strong style="color:#000; font-size:1rem;">${d.bank}</strong><br><span style="font-size:1.3rem; font-weight:bold; color:#333; letter-spacing:1px;">${d.rekening}</span>${anInfo} <i class="fas fa-copy" onclick="salin('${d.rekening}')" style="cursor:pointer; color:#2e7d32; font-size:1.2rem; margin-left:8px;"></i><br>${qrDisplay}</div>` : '';
+
+                const card = `
+                <div id="slip-${d.id}" class="slip-card">
+                    <div class="slip-inner">
+                        <div style="text-align:center; margin-bottom:20px; border-bottom:2px solid #D4AF37; padding-bottom:15px;">
+                            <img src="borsin.png" style="width:60px; height:60px; border-radius:50%; border:3px solid #D4AF37; margin-bottom:10px; object-fit:cover; background:white;">
+                            <h3 style="margin:0; color:#800000;">BORSIN TENUN</h3>
+                            <p style="font-size:0.8rem; color:#555;">Slip Gaji Resmi</p>
+                            <small style="background:#800000; color:white; padding:3px 10px; border-radius:15px; font-size:0.75rem;">${tgl}</small>
+                        </div>
+                        <div style="font-size:0.9rem; line-height:1.6;">
+                            <div style="display:flex; justify-content:space-between;"><span>Penerima:</span><strong>${d.nama_karyawan}</strong></div>
+                            <div style="display:flex; justify-content:space-between;"><span>Ulos:</span><span>${d.nama_ulos} (${d.jumlah} Lbr)</span></div>
+                            <div style="display:flex; justify-content:space-between; color:#d32f2f;"><span>Pot. Pakan:</span><span>- ${fmt(d.pakan||0)}</span></div>
+                            <div style="display:flex; justify-content:space-between; color:#d32f2f;"><span>Pot. Lain:</span><span>- ${fmt((Number(d.pot_air)||0)+(Number(d.pot_wifi)||0)+(Number(d.pot_stell)||0)+(Number(d.pot_lain)||0))}</span></div>
+                            <div style="display:flex; justify-content:space-between; border-top:2px solid #eee; margin-top:10px; padding-top:5px;">
+                                <span style="font-weight:bold; color:#800000;">TOTAL:</span><span style="font-weight:bold; color:#2e7d32; font-size:1.2rem;">${fmt(d.gajiBersih)}</span>
+                            </div>
+                        </div>
+                        ${rek}
+                        <div style="margin-top:20px; text-align:center; font-size:0.7rem; color:#aaa;">-- Terima Kasih --</div>
+                    </div>
+                    <div class="no-print" style="text-align:center; padding:15px; background:#fafafa; border-top:1px solid #eee;">
+                        <button onclick="cetakSlip('slip-${d.id}')" style="background:linear-gradient(to right, #800000, #a00000); color:white; border:none; padding:10px 30px; border-radius:50px; font-weight:bold; cursor:pointer;"><i class="fas fa-print"></i> Cetak Slip</button> 
+                        ${isAdmin ? `<br><br><button onclick="hapusData('${d.id}')" style="color:#d32f2f; background:none; border:none; text-decoration:underline;">Hapus Data</button>` : ''}
+                    </div>
+                </div>`;
+                div.innerHTML += card;
+            });
+        }
+
+        window.viewImage = (src) => { document.getElementById('imgModal').style.display="flex"; document.getElementById('imgModalContent').src=src; };
+        window.salin = t => { navigator.clipboard.writeText(t).then(()=>alert("Disalin: "+t)); };
+        window.hapusData = async (id) => { if(confirm("Hapus?")) { await deleteDoc(doc(db, "gaji", id)); location.reload(); } };
+        window.cetakSlip = (id) => { const c=document.getElementById(id).querySelector('.slip-inner').outerHTML; const o=document.body.innerHTML; document.body.innerHTML=`<div class="container" style="margin-top:20px; max-width:400px; margin-left:auto; margin-right:auto;">${c}</div>`; window.print(); document.body.innerHTML=o; window.location.reload(); };
+    </script>
+</body>
+</html>
