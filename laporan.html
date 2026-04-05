@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Laporan Gaji - Borsin Tenun</title>
+    <link rel="stylesheet" href="style.css?v=FINAL">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+        body { background-color: #f1f2f6; padding-bottom: 90px; font-family: 'Poppins', sans-serif; margin: 0; }
+        .navbar { background: #800000; color: white; padding: 20px; text-align: center; border-bottom-left-radius: 25px; border-bottom-right-radius: 25px; }
+        .container { padding: 15px; }
+        .filter-card { background: white; border-radius: 15px; padding: 15px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .filter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .filter-grid label { font-size: 0.7rem; font-weight: bold; color: #666; margin-bottom: 5px; display: block; }
+        .form-control { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.85rem; box-sizing: border-box; font-family: 'Poppins'; }
+        .btn-filter { background: #800000; color: white; border: none; width: 100%; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .summary-box { background: linear-gradient(135deg, #800000, #a52a2a); color: white; padding: 20px; border-radius: 20px; text-align: center; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(128,0,0,0.3); }
+        .summary-box h2 { margin: 5px 0 0 0; font-size: 1.8rem; }
+        .card-laporan { background: white; border-radius: 15px; padding: 15px; margin-bottom: 12px; border-left: 5px solid #27ae60; position: relative; }
+        .header-lp { border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .nama-lp { font-weight: 700; color: #333; font-size: 0.9rem; text-transform: uppercase; }
+        .tgl-lp { font-size: 0.7rem; color: #999; }
+        .row-lp { display: flex; justify-content: space-between; font-size: 0.8rem; padding: 3px 0; color: #555; }
+        .text-bold { font-weight: 600; color: #333; }
+        .text-red { color: #d63031; font-weight: 600; }
+        .text-green { color: #27ae60; font-weight: 700; }
+        .ringkasan-bawah { background: #fff; border-radius: 15px; padding: 15px; margin-top: 20px; border: 2px solid #800000; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .ringkasan-bawah h4 { margin: 15px 0 10px 0; color: #800000; border-bottom: 1px solid #eee; padding-bottom: 5px; display: flex; align-items: center; gap: 8px; font-size: 0.9rem; }
+        .daftar-nama { font-size: 0.8rem; color: #444; line-height: 1.6; background: #f9f9f9; padding: 10px; border-radius: 8px; border: 1px solid #eee; }
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; padding: 10px 0; border-top: 1px solid #eee; z-index: 100; }
+        .nav-item { flex: 1; text-align: center; color: #ccc; text-decoration: none; font-size: 0.7rem; }
+        .nav-item.active { color: #800000; font-weight: bold; }
+        .nav-item i { font-size: 1.2rem; display: block; margin-bottom: 2px; }
+    </style>
+</head>
+<body>
+    <div class="navbar"><h3>LAPORAN GAJI DITERIMA</h3></div>
+    <div class="container">
+        <div class="filter-card">
+            <div class="filter-grid">
+                <div><label>Dari Tanggal:</label><input type="date" id="tgl-mulai" class="form-control"></div>
+                <div><label>Sampai Tanggal:</label><input type="date" id="tgl-sampai" class="form-control"></div>
+            </div>
+            <div style="margin-bottom: 10px;"><input type="text" id="cari-nama-lp" class="form-control" placeholder="Cari nama penenun..." onkeyup="prosesFilterLaporan()"></div>
+            <button class="btn-filter" onclick="prosesFilterLaporan()"><i class="fas fa-sync-alt"></i> TERAPKAN FILTER</button>
+        </div>
+        <div class="summary-box"><span>Total Gaji Bersih Terpilih</span><h2 id="total-semua">Rp 0</h2></div>
+        <div id="list-laporan"><p style="text-align:center; color:#999; margin-top:30px;">Memuat data laporan...</p></div>
+        <div id="container-ringkasan" style="display:none;">
+            <div class="ringkasan-bawah">
+                <h4><i class="fas fa-users"></i> PENENUN AKTIF: <span id="jml-orang">0</span> ORANG</h4>
+                <div id="list-nama-penenun" class="daftar-nama"></div>
+                <h4><i class="fas fa-box-open"></i> TOTAL PRODUKSI</h4><div id="list-ringkasan-ulos"></div>
+                <h4><i class="fas fa-cut"></i> TOTAL POTONGAN</h4><div id="list-ringkasan-potongan"></div>
+            </div>
+        </div>
+    </div>
+    <div class="bottom-nav">
+        <a href="dashboard.html" class="nav-item"><i class="fas fa-home"></i><span>Home</span></a>
+        <a href="hitung_gaji.html" class="nav-item"><i class="fas fa-calculator"></i><span>Hitung</span></a>
+        <a href="rekapan_gaji.html" class="nav-item"><i class="fas fa-wallet"></i><span>Rekapan</span></a>
+        <a href="laporan.html" class="nav-item active"><i class="fas fa-file-alt"></i><span>Laporan</span></a>
+    </div>
+    <script type="module">
+        import { db } from "./config.js";
+        import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+        const fmt = (n) => new Intl.NumberFormat('id-ID').format(n);
+        let semuaLaporan = []; 
+
+        async function muatLaporan() {
+            const listContainer = document.getElementById("list-laporan");
+            try {
+                // orderBy dihapus agar tidak error Index Firestore
+                const q = query(collection(db, "gaji"), where("status", "==", "Diterima"));
+                const snap = await getDocs(q);
+                semuaLaporan = [];
+                snap.forEach(doc => { semuaLaporan.push({ id: doc.id, ...doc.data() }); });
+                prosesFilterLaporan(); 
+            } catch (err) {
+                listContainer.innerHTML = `<p style='color:red; text-align:center;'>Gagal memuat data server.</p>`;
+            }
+        }
+
+        window.prosesFilterLaporan = () => {
+            const tglMulai = document.getElementById("tgl-mulai").value;
+            const tglSampai = document.getElementById("tgl-sampai").value;
+            const kataKunci = document.getElementById("cari-nama-lp").value.toLowerCase();
+
+            let dataTampil = semuaLaporan.filter(d => {
+                const matchNama = (d.nama_karyawan || "").toLowerCase().includes(kataKunci);
+                let matchTanggal = true;
+                if (tglMulai && tglSampai) {
+                    const tglData = d.timestamp ? d.timestamp.toDate() : null;
+                    const start = new Date(tglMulai);
+                    const end = new Date(tglSampai);
+                    end.setHours(23, 59, 59);
+                    matchTanggal = tglData && tglData >= start && tglData <= end;
+                }
+                return matchNama && matchTanggal;
+            });
+
+            dataTampil.sort((a, b) => (a.nama_karyawan || "").toLowerCase().localeCompare((b.nama_karyawan || "").toLowerCase()));
+            renderLayar(dataTampil);
+        };
+
+        function renderLayar(data) {
+            const listContainer = document.getElementById("list-laporan");
+            const ringkasanBox = document.getElementById("container-ringkasan");
+            let html = ""; let totalGajiSemua = 0; let rekapUlos = {}; 
+            let rekapPotongan = { "Pakan": 0, "Air": 0, "Wifi": 0, "Stell": 0, "Lain-lain": 0 };
+            let setNamaPenenun = new Set();
+
+            data.forEach(d => {
+                totalGajiSemua += (Number(d.gajiBersih) || 0);
+                const tgl = d.timestamp ? d.timestamp.toDate().toLocaleDateString('id-ID', { day:'2-digit', month:'short' }) : '-';
+                if(d.nama_karyawan) setNamaPenenun.add(d.nama_karyawan.toUpperCase());
+
+                let prodHtml = "";
+                const items = d.produksi_multi || [{nama_ulos: d.nama_ulos, jumlah: d.jumlah, upah_satuan: d.upah_satuan}];
+                items.forEach(p => {
+                    const subtotal = (Number(p.jumlah) || 0) * (Number(p.upah_satuan) || 0);
+                    prodHtml += `<div class="row-lp"><span><b>${p.nama_ulos}</b> (${p.jumlah} Lbr)</span><span class="text-bold">Rp ${fmt(subtotal)}</span></div>`;
+                    rekapUlos[p.nama_ulos] = (rekapUlos[p.nama_ulos] || 0) + Number(p.jumlah);
+                });
+
+                rekapPotongan["Pakan"] += (Number(d.pakan) || 0);
+                rekapPotongan["Air"] += (Number(d.pot_air) || 0);
+                rekapPotongan["Wifi"] += (Number(d.pot_wifi) || 0);
+                rekapPotongan["Stell"] += (Number(d.pot_stell) || 0);
+                if(d.daftar_potongan) d.daftar_potongan.forEach(p => rekapPotongan["Lain-lain"] += (Number(p.val) || 0));
+
+                html += `<div class="card-laporan"><div class="header-lp"><span class="nama-lp">${d.nama_karyawan}</span><span class="tgl-lp">${tgl}</span></div>
+                        <div style="border-bottom:1px dashed #eee; padding-bottom:5px;">${prodHtml}</div>
+                        <div class="row-lp" style="margin-top:8px;"><span class="text-green">Gaji Bersih:</span><span class="text-green">Rp ${fmt(d.gajiBersih)}</span></div></div>`;
+            });
+
+            document.getElementById("total-semua").innerText = "Rp " + fmt(totalGajiSemua);
+            if (data.length > 0) {
+                document.getElementById("jml-orang").innerText = setNamaPenenun.size;
+                document.getElementById("list-nama-penenun").innerText = Array.from(setNamaPenenun).sort().join(", ");
+                let ulosHtml = ""; for (let j in rekapUlos) ulosHtml += `<div class="row-lp"><span>${j}</span><span class="text-bold">${rekapUlos[j]} Lbr</span></div>`;
+                document.getElementById("list-ringkasan-ulos").innerHTML = ulosHtml;
+                let potHtml = ""; for (let k in rekapPotongan) if(rekapPotongan[k] > 0) potHtml += `<div class="row-lp"><span>Total ${k}</span><span class="text-red">Rp ${fmt(rekapPotongan[k])}</span></div>`;
+                document.getElementById("list-ringkasan-potongan").innerHTML = potHtml || "Kosong";
+                ringkasanBox.style.display = "block";
+            } else { ringkasanBox.style.display = "none"; }
+            listContainer.innerHTML = html || "<p style='text-align:center; color:#999; margin-top:50px;'>Data tidak ditemukan.</p>";
+        }
+        window.onload = muatLaporan;
+    </script>
+</body>
+</html>
